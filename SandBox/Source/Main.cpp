@@ -6,7 +6,6 @@
 #include "Oneiro/Core/Logger.hpp"
 #include "Oneiro/Runtime/Application.hpp"
 #include "Oneiro/Renderer/OpenGL/Sprite2D.hpp"
-#include "Oneiro/Core/ResourceManager.hpp"
 #include "HazelAudio/HazelAudio.h"
 
 class SandBoxApp final : public oe::Runtime::Application
@@ -14,24 +13,30 @@ class SandBoxApp final : public oe::Runtime::Application
 public:
     bool Init() override
     {
-        using namespace oe;
         oe::log::get("log")->info("Initializing...");
-        mSprite2D.Init("Textures/sprite.png");
-        mSource.LoadFromFile("AcousticGuitar1.ogg");
-        mSource.SetVolume(0.01f);
-        mSource.Play();
+
+        mBackground2D.Init("Assets/Textures/background.jpg", false);
+        mSprite2D.Init("Assets/Textures/sprite.png");
+
+        mAudioSource.LoadFromFile("Assets/Audio/music.mp3");
+
+        mAudioSource.SetVolume(0.5f);
+        mAudioSource.Play();
+
         return true;
     }
 
     bool Update() override
     {
+        mBackground2D.Draw();
         mSprite2D.Draw();
+
         return true;
     }
 
     void Shutdown() override
     {
-        oe::log::get("log")->info("Closing...");
+        oe::log::get("log")->info("Shutdown...");
     }
 
     void HandleKey(oe::Input::Key key, oe::Input::Action action) override
@@ -52,8 +57,9 @@ public:
 
 
 private:
-    Hazel::Audio::Source mSource;
+    Hazel::Audio::Source mAudioSource;
     oe::Renderer::Sprite2D mSprite2D;
+    oe::Renderer::Sprite2D mBackground2D;
 };
 
 namespace oe::Runtime
