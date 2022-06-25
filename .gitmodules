@@ -35,3 +35,6 @@
 [submodule "ThirdParty/assimp"]
 	path = ThirdParty/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "ThirdParty/luau"]
+	path = ThirdParty/luau
+	url = https://github.com/Roblox/luau.git
