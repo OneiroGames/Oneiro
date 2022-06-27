@@ -17,7 +17,7 @@ namespace SandBox
     public:
         bool OnInit() override;
         bool OnUpdate(float deltaTime) override;
-        void MousePos(double xPos, double yPos) override;
+        void OnEvent(const oe::Core::Event::Base& e) override;
         void OnShutdown() override;
     private:
         std::shared_ptr<oe::World::World> mWorld{};

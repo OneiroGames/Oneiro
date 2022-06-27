@@ -132,34 +132,23 @@ namespace oe::Runtime
 					resizeEvent.Width,
 					resizeEvent.Height);
 			}
+
+			Root::GetApplication()->OnEvent(e);
 		});
 
 		Event::Dispatcher::Subscribe<Event::KeyInputEvent>([](const Event::Base& e)
 		{
-			const auto& keyInputEvent =
-				dynamic_cast<const Event::KeyInputEvent&>(e);
-			Root::GetApplication()->HandleKey(
-				static_cast<Input::Key>(keyInputEvent
-					.Key),
-				static_cast<Input::Action>(keyInputEvent
-					.Action));
+			Root::GetApplication()->OnEvent(e);
 		});
 
 		Event::Dispatcher::Subscribe<Event::MouseButtonEvent>([](const Event::Base& e)
 		{
-			const auto& mouseButtonEvent =
-				dynamic_cast<const Event::MouseButtonEvent&>(e);
-			Root::GetApplication()->HandleButton(
-				static_cast<Input::Button>(mouseButtonEvent
-					.Button),
-				static_cast<Input::Action>(mouseButtonEvent
-					.Action));
+			Root::GetApplication()->OnEvent(e);
 		});
 
 		Event::Dispatcher::Subscribe<Event::CursorPosEvent>([](const Event::Base& e)
-			{
-				const auto& mousePosEvent = dynamic_cast<const Event::CursorPosEvent&>(e);
-				Root::GetApplication()->MousePos(mousePosEvent.XPos, mousePosEvent.YPos);
-			});
+		{
+			Root::GetApplication()->OnEvent(e);
+		});
 	}
 }

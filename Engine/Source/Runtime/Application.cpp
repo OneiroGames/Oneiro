@@ -36,15 +36,7 @@ namespace oe::Runtime
 	{
 	}
 
-	void Application::HandleKey(Input::Key key, Input::Action action)
-	{
-	}
-
-	void Application::HandleButton(Input::Button button, Input::Action action)
-	{
-	}
-
-	void Application::MousePos(double xPos, double yPos)
+	void Application::OnEvent(const Core::Event::Base& e)
 	{
 	}
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Oneiro/Core/Input.hpp"
+#include "Oneiro/Core/Event.hpp"
 #include <memory>
 
 namespace oe::Runtime
@@ -19,9 +20,7 @@ namespace oe::Runtime
 		virtual bool OnInit();
 		virtual bool OnUpdate(float deltaTime);
 		virtual void OnShutdown();
-		virtual void HandleKey(Input::Key key, Input::Action action);
-		virtual void HandleButton(Input::Button button, Input::Action action);
-		virtual void MousePos(double xPos, double yPos);
+		virtual void OnEvent(const Core::Event::Base& e);
 
 	    [[nodiscard]] Core::Window* GetWindow() const;
 		[[nodiscard]] bool IsStopped() const;

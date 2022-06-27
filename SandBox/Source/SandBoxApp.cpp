@@ -111,10 +111,15 @@ namespace SandBox
         return true;
     }
 
-    void Application::MousePos(double xPos, double yPos)
+    void Application::OnEvent(const oe::Core::Event::Base& e)
     {
-        auto& mainCamera = mWorld->GetEntity("Player").GetComponent<oe::MainCameraComponent>();
-        mainCamera.UpdateMouse(static_cast<float>(xPos), static_cast<float>(yPos));
+        if (typeid(e) == typeid(oe::Core::Event::CursorPosEvent))
+        {
+            const auto& cursorEvent =
+                dynamic_cast<const oe::Core::Event::CursorPosEvent&>(e);
+            auto& mainCamera = mWorld->GetEntity("Player").GetComponent<oe::MainCameraComponent>();
+            mainCamera.UpdateMouse(static_cast<float>(cursorEvent.XPos), static_cast<float>(cursorEvent.YPos));
+        }
     }
 
     void Application::OnShutdown()
