@@ -16,7 +16,7 @@ namespace
 
 namespace oe::Core
 {
-	Config::Config(const std::string& file)
+	/*Config::Config(const std::string& file)
 	{
 		try
 		{
@@ -50,5 +50,5 @@ namespace oe::Core
 	Config* Config::Add(const std::string& name)
 	{
 		return (configsMap[name] = std::make_unique<Config>(name)).get();
-	}
+	}*/
 }

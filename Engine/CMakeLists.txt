@@ -76,6 +76,7 @@ set(ASSIMP_BUILD_MD3_IMPORTER OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_MD4_IMPORTER OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_MD5_IMPORTER OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_GLTF_IMPORTER OFF CACHE BOOL "" FORCE)
+set(LUAU_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 if (OE_API_VULKAN)
     message(FATAL_ERROR "Currently Oneiro Engine dont support Vulkan API")
@@ -95,7 +96,6 @@ endif ()
 file(GLOB ONEIRO_SOURCE
         "Source/Animation/*.cpp"
         "Source/Core/*.cpp"
-        "Source/Lua/*.cpp"
         "Source/Renderer/*.cpp"
         "Source/Renderer/Gui/*.cpp"
         "Source/Runtime/*.cpp"
@@ -109,15 +109,15 @@ add_subdirectory(../ThirdParty/glm ThirdParty/glm)
 add_subdirectory(../ThirdParty/spdlog ThirdParty/spdlog)
 add_subdirectory(../ThirdParty/entt ThirdParty/entt)
 add_subdirectory(../ThirdParty/yaml-cpp ThirdParty/yaml-cpp)
-add_subdirectory(../ThirdParty/sol2 ThirdParty/sol2)
-add_subdirectory(../ThirdParty/lua ThirdParty/lua)
+#add_subdirectory(../ThirdParty/sol2 ThirdParty/sol2)
+#add_subdirectory(../ThirdParty/lua ThirdParty/lua)
 add_subdirectory(../ThirdParty/HazelAudio ThirdParty/HazelAudio)
 add_subdirectory(../ThirdParty/freetype ThirdParty/freetype)
 add_subdirectory(../ThirdParty/assimp ThirdParty/assimp)
+add_subdirectory(../ThirdParty/luau ThirdParty/luau)
 target_include_directories(${PROJECT_NAME} PUBLIC ../ThirdParty/stb/include ../ThirdParty/imgui/ Include/ ../ThirdParty/OpenGL/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ../ThirdParty/imgui)
-target_link_libraries(${PROJECT_NAME} glfw glm spdlog EnTT yaml-cpp::yaml-cpp lua_static
-        sol2::sol2 Hazel.Audio freetype assimp)
+target_link_libraries(${PROJECT_NAME} glfw glm spdlog EnTT yaml-cpp::yaml-cpp Hazel.Audio freetype assimp Luau.Common Luau.Compiler Luau.VM Luau.Analysis Luau.Ast)
 if (OE_API_VULKAN)
     # Link Vulkan...
 else ()
