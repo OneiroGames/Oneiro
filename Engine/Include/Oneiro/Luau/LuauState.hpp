@@ -49,6 +49,8 @@ namespace
     };
 } // namespace
 
+static std::unordered_map<std::string, oe::Luau::FunctionsFactory> functions;
+
 namespace oe::Luau
 {
     class State
@@ -205,10 +207,24 @@ namespace oe::Luau
     {
         auto vPtr = std::make_shared<T>();
         T** ptr = (T**)lua_newuserdata(state, sizeof(T*));
-        luaL_newmetatable(state, "");
+        *ptr = vPtr.get();
+        luaL_newmetatable(state, typeName.c_str());
+        lua_pushvalue(state, -1);
+        lua_setfield(state, -2, "__index");
         auto func = mLuauFunctions.find(typeName);
         if (func != mLuauFunctions.end())
             (*(func)).second(state, vPtr.get());
+        auto factory = functions.find(typeName);
+        if (factory != functions.end())
+        {
+            const auto& funcs = factory->second.GetLuaFunctions();
+            for (const auto func : funcs)
+            {
+                lua_pushcfunction(state, func.second, func.first);
+                lua_setfield(state, -2, func.first);
+            }
+        }
+        lua_setmetatable(state, -2);
         return *ptr;
     }
 
@@ -216,27 +232,18 @@ namespace oe::Luau
     void State::AddUserType(std::string typeName, const FunctionsFactory& regsFactory)
     {
         std::vector<luaL_Reg> regs{};
-        auto luaFuncs = regsFactory.GetLuaFunctions();
         auto funcs = regsFactory.GetFunctions();
-        for (const auto& luaFunc : luaFuncs)
-        {
-            if (std::strcmp(luaFunc.first, "new") == 0)
-            {
-                continue;
-            }
-            regs.push_back({luaFunc.first, luaFunc.second});
-        }
-
         for (const auto& func : funcs)
         {
             if (std::strcmp(func.first, "new") == 0)
             {
                 mLuauFunctions[typeName] = func.second;
-                regs.push_back({"new", Function<T*, lua_State*>::template Create<std::string>(NewUserDataFunc<T>, typeName)});
             }
         }
+        regs.push_back({"new", Function<T*, lua_State*>::template Create<std::string>(NewUserDataFunc<T>, typeName)});
         regs.push_back({nullptr, nullptr});
         luaL_register(mState, typeName.c_str(), regs.data());
+        functions[typeName] = regsFactory;
     }
 
     inline std::unordered_map<std::string, AnyCallable<void>> State::mLuauFunctions{};
