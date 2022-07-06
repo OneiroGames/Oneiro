@@ -9,6 +9,7 @@
 #include "lualib.h"
 
 #include <type_traits>
+#include <string>
 
 const char* fieldName{};
 
@@ -42,7 +43,7 @@ namespace oe::Luau
         {
             return bool(luaL_checkboolean(state, idx));
         }
-        else if constexpr (std::is_same_v<decayT, const char*>)
+        else if constexpr (std::is_same_v<decayT, const char*> || std::is_same_v<decayT, std::string>)
         {
             return luaL_checkstring(state, idx);
         }
