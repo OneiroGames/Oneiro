@@ -79,6 +79,16 @@ namespace oe::Luau
         std::vector<std::pair<const char*, AnyCallable<void>>> mFunctions{};
     };
 
+    void CallFunction(lua_State* state, const char* name)
+    {
+        lua_getglobal(state, name);
+        if (lua_pcall(state, 0, 0, 0) != 0)
+        {
+            log::get("log")->warn("Failed to call " + std::string(name) + " function! Error: " + lua_tostring(state, -1));
+            return;
+        }
+    }
+
     template <class T>
     void CallFunction(lua_State* state, const char* name, T val)
     {
