@@ -10,7 +10,7 @@
 
 #define IS_SAME(...) requires(std::is_same<T, __VA_ARGS__>::value)
 
-#define IS_SAME_TEMPLATE(auto) template <class T> IS_SAME(auto)
+#define IS_SAME_TEMPLATE(...) template <class T> IS_SAME(__VA_ARGS__)
 
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
