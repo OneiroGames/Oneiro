@@ -8,7 +8,7 @@
 #include "OpenGL/gl_core_4_5.hpp"
 #include <cstdint>
 
-#define IS_SAME(auto) requires(std::is_same<T, auto>::value)
+#define IS_SAME(...) requires(std::is_same<T, __VA_ARGS__>::value)
 
 #define IS_SAME_TEMPLATE(auto) template <class T> IS_SAME(auto)
 
