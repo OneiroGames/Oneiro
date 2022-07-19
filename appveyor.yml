@@ -8,8 +8,8 @@ init:
 - sh: sudo apt update && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
 
 clone_script:
-- sh: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch APPVEYOR_REPO_BRANCH && cd OneiroEngine
-- cmd: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch APPVEYOR_REPO_BRANCH && cd OneiroEngine
+- sh: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch ${branch} && cd OneiroEngine
+- cmd: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch ${branch} && cd OneiroEngine
 
 build_script:
 - sh: cmake SandBox/ -DCMAKE_CXX23_EXTENSION_COMPILE_OPTION="-std=gnu++2a" && make
