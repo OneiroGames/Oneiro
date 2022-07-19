@@ -5,7 +5,7 @@ image:
 - Visual Studio 2022
 
 init:
-- sh: sudo apt update && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
+- sh: sudo apt update && sudo apt remove gcc g++ && sudo apt install clang && export CC=/usr/bin/clang && export CXX=/usr/bin/clang++ && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
 
 build_script:
 - sh: git submodule init && git submodule update && cmake SandBox/ -DCMAKE_CXX23_EXTENSION_COMPILE_OPTION="-std=gnu++2a" && make
