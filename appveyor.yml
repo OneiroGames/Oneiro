@@ -8,7 +8,7 @@ init:
 - sh: sudo apt update && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
 
 clone_script:
-- sh: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch ${branch} && cd OneiroEngine
+- sh: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch origin/build-linux && cd OneiroEngine
 - cmd: git clone https://github.com/DezlowNG/OneiroEngine --recursive --branch ${branch} && cd OneiroEngine
 
 build_script:
