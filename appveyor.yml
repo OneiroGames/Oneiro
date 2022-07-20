@@ -1,11 +1,11 @@
 version: 1.0.{build}
 
 image:
-- Ubuntu
+- Ubuntu2004
 - Visual Studio 2022
 
 init:
-- sh: sudo apt update && sudo apt remove -y gcc g++ && sudo apt install -y clang && export CC=/usr/bin/clang && export CXX=/usr/bin/clang++ && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
+- sh: sudo apt update && sudo apt remove -y gcc g++ && sudo apt install -y clang-14 && export CC=/usr/bin/clang && export CXX=/usr/bin/clang++ && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
 
 build_script:
 - sh: git submodule init && git submodule update && cmake SandBox/ -DCMAKE_CXX23_EXTENSION_COMPILE_OPTION="-std=gnu++2a" && make
