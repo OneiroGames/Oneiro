@@ -63,38 +63,8 @@ namespace oe::Renderer::GL
     };
 
     // ReSharper disable CppCStyleCast
-    IS_SAME_TEMPLATE(float)
-    constexpr void VertexAttribPointer(int index, int size, int stride, int offset = 0)
-    {
-        gl::EnableVertexAttribArray(index);
-        gl::VertexAttribPointer(index, size, gl::FLOAT, gl::FALSE_, static_cast<int>(stride * sizeof(float)),
-                                offset == 0 ? nullptr : (void*)(offset * sizeof(float)));
-    }
 
-    template <class T, class U>
-        requires(std::is_same_v<T, float>)
-    constexpr void VertexAttribPointer(int index, int size, int stride, int offset = 0)
-    {
-        gl::EnableVertexAttribArray(index);
-        gl::VertexAttribPointer(index, size, gl::FLOAT, gl::FALSE_, static_cast<int>(stride * sizeof(U)),
-                                offset == 0 ? nullptr : (void*)(offset));
-    }
-
-    IS_SAME_TEMPLATE(int)
-    constexpr void VertexAttribPointer(int index, int size, int stride, int offset = 0)
-    {
-        gl::EnableVertexAttribArray(index);
-        gl::VertexAttribPointer(index, size, gl::INT, gl::FALSE_, static_cast<int>(stride * sizeof(int)),
-                                offset == 0 ? nullptr : (void*)(offset * sizeof(int)));
-    }
-
-    IS_SAME_TEMPLATE(char)
-    constexpr void VertexAttribPointer(int index, int size, int stride, int offset = 0)
-    {
-        gl::EnableVertexAttribArray(index);
-        gl::VertexAttribPointer(index, size, gl::UNSIGNED_BYTE, gl::TRUE_, static_cast<int>(stride * sizeof(char)),
-                                offset == 0 ? nullptr : (void*)(offset * sizeof(char)));
-    }
+    void VertexAttribPointer(int index, int size, int stride, int offset = 0);
 
     // ReSharper restore CppCStyleCast
 } // namespace oe::Renderer::GL

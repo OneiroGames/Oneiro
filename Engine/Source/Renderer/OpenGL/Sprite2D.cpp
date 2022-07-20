@@ -24,7 +24,7 @@ namespace oe::Renderer::GL
         mVAO.Bind();
         mVBO.Bind();
         mVBO.BufferData(sizeof(vertices), vertices);
-        VertexAttribPointer<float>(0, 3, 3);
+        VertexAttribPointer(0, 3, 3);
         mVAO.UnBind();
         mVBO.UnBind();
         mTexture = Core::GetTexturesManager().Add(std::make_shared<Texture<gl::TEXTURE_2D>>(path));
