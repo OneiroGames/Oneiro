@@ -60,10 +60,10 @@ namespace oe::Renderer::GL
         {
             mVerticesCount = mVertices.size();
         }
-        VertexAttribPointer<float>(0, 4, 12);     // Color
-        VertexAttribPointer<float>(1, 3, 12, 4);  // Pos
-        VertexAttribPointer<float>(2, 3, 12, 7);  // Normal
-        VertexAttribPointer<float>(3, 2, 12, 10); // TexCoords
+        VertexAttribPointer(0, 4, 12);     // Color
+        VertexAttribPointer(1, 3, 12, 4);  // Pos
+        VertexAttribPointer(2, 3, 12, 7);  // Normal
+        VertexAttribPointer(3, 2, 12, 10); // TexCoords
         mVAO.UnBind();
         mVBO.UnBind();
         mEBO.UnBind();

@@ -72,4 +72,5 @@ namespace oe::Renderer::Vulkan
 
         CommandBuffer::EndSingleTimeCommands(commandBuffer);
     }
-} // namespace oe::Renderer::Vulkan
+}
+// namespace oe::Renderer::Vulkan

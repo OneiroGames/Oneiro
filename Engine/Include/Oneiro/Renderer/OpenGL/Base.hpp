@@ -8,10 +8,6 @@
 #include "OpenGL/gl_core_4_5.hpp"
 #include <cstdint>
 
-#define IS_SAME(auto) requires(std::is_same<T, auto>::value)
-
-#define IS_SAME_TEMPLATE(auto) template <class T> IS_SAME(auto)
-
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"

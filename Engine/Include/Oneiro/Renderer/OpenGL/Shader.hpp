@@ -50,98 +50,82 @@ namespace oe::Renderer::GL
 
         void Use() const;
 
-        IS_SAME_TEMPLATE(bool)
-        constexpr void SetUniform(const char* name, T value) const
+        void SetUniform(const char* name, unsigned char value) const
         {
             gl::Uniform1i(GetUniformLocation(name), value);
         }
 
-        IS_SAME_TEMPLATE(char)
-        constexpr void SetUniform(const char* name, T value) const
+        void SetUniform(const char* name, char value) const
         {
             gl::Uniform1i(GetUniformLocation(name), value);
         }
 
-        IS_SAME_TEMPLATE(unsigned int)
-        constexpr void SetUniform(const char* name, T value) const
+        void SetUniform(const char* name, unsigned int value) const
         {
             gl::Uniform1ui(GetUniformLocation(name), value);
         }
 
-        IS_SAME_TEMPLATE(unsigned int)
-        constexpr void SetUniform(const char* name, T first, T second) const
+        void SetUniform(const char* name, unsigned int first, unsigned int second) const
         {
             gl::Uniform2ui(GetUniformLocation(name), first, second);
         }
 
-        IS_SAME_TEMPLATE(unsigned int)
-        constexpr void SetUniform(const char* name, T first, T second, T third) const
+        void SetUniform(const char* name, unsigned int first, unsigned int second, unsigned int third) const
         {
             gl::Uniform3ui(GetUniformLocation(name), first, second, third);
         }
 
-        IS_SAME_TEMPLATE(unsigned int)
-        constexpr void SetUniform(const char* name, T first, T second, T third, T fourth) const
+        void SetUniform(const char* name, unsigned int first, unsigned int second, unsigned int third, unsigned int fourth) const
         {
             gl::Uniform4ui(GetUniformLocation(name), first, second, third, fourth);
         }
 
-        IS_SAME_TEMPLATE(int)
-        constexpr void SetUniform(const char* name, T value) const
+        void SetUniform(const char* name, int value) const
         {
             gl::Uniform1i(GetUniformLocation(name), value);
         }
 
-        IS_SAME_TEMPLATE(int)
-        constexpr void SetUniform(const char* name, T first, T second) const
+        void SetUniform(const char* name, int first, int second) const
         {
             gl::Uniform2i(GetUniformLocation(name), first, second);
         }
 
-        IS_SAME_TEMPLATE(int)
-        constexpr void SetUniform(const char* name, T first, T second, T third) const
+        void SetUniform(const char* name, int first, int second, int third) const
         {
             gl::Uniform3i(GetUniformLocation(name), first, second, third);
         }
 
-        IS_SAME_TEMPLATE(int)
-        constexpr void SetUniform(const char* name, T first, T second, T third, T fourth) const
+        void SetUniform(const char* name, int first, int second, int third, int fourth) const
         {
             gl::Uniform4i(GetUniformLocation(name), first, second, third, fourth);
         }
 
-        IS_SAME_TEMPLATE(float)
-        constexpr void SetUniform(const char* name, T value) const
+        void SetUniform(const char* name, float value) const
         {
             gl::Uniform1f(GetUniformLocation(name), value);
         }
 
-        IS_SAME_TEMPLATE(float)
-        constexpr void SetUniform(const char* name, T first, T second) const
+        void SetUniform(const char* name, float first, float second) const
         {
             gl::Uniform2f(GetUniformLocation(name), first, second);
         }
 
-        IS_SAME_TEMPLATE(float)
-        constexpr void SetUniform(const char* name, T first, T second, T third) const
+        void SetUniform(const char* name, float first, float second, float third) const
         {
             gl::Uniform3f(GetUniformLocation(name), first, second, third);
         }
 
-        IS_SAME_TEMPLATE(glm::mat4)
-        constexpr void SetUniform(const char* name, T first, T second, T third, T fourth) const
+        void SetUniform(const char* name, float first, float second, float third, float fourth) const
         {
             gl::Uniform4f(GetUniformLocation(name), first, second, third, fourth);
         }
 
-        IS_SAME_TEMPLATE(glm::vec3)
-        constexpr void SetUniform(const char* name, const T& vec) const
+        void SetUniform(const char* name, const glm::vec3& vec) const
         {
             gl::Uniform3fv(GetUniformLocation(name), 1, &vec[0]);
         }
 
-        IS_SAME_TEMPLATE(glm::mat4)
-        constexpr void SetUniform(const char* name, const T& mat) const
+        void SetUniform(const char* name, const glm::mat4& mat) const
         {
             gl::UniformMatrix4fv(GetUniformLocation(name), 1, gl::FALSE_, &mat[0][0]);
         }
@@ -160,7 +144,7 @@ namespace oe::Renderer::GL
 
         static bool CheckCompileError(uint32_t id, const char* type);
 
-        template <class T = int> constexpr GLint GetUniformLocation(const char* name) const
+        GLint GetUniformLocation(const char* name) const
         {
             if (mUniformLocationCache.contains(name))
                 return mUniformLocationCache[name];

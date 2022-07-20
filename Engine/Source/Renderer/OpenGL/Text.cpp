@@ -22,7 +22,7 @@ namespace oe::Renderer::GL
         mVAO.Bind();
         mVBO.Bind();
         mVBO.BufferData<float>(6 * 4, nullptr);
-        VertexAttribPointer<float>(0, 4, 4);
+        VertexAttribPointer(0, 4, 4);
 
         const auto vertexShaderSrc = R"(
                 #version 330 core
