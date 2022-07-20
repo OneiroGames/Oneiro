@@ -3,9 +3,10 @@ version: 1.0.{build}
 image:
 - Ubuntu2004
 - Visual Studio 2022
+- macos
 
 init:
-- sh: sudo apt update && sudo apt install -y xorg-dev mesa-common-dev libgl-dev
+- sh: if [[ "$OSTYPE" == "linux-gnu"* ]]; then (sudo apt update && sudo apt install -y xorg-dev mesa-common-dev libgl-dev) fi
 
 build_script:
 - sh: git submodule init && git submodule update && cmake SandBox/ -DCMAKE_CXX23_EXTENSION_COMPILE_OPTION="-std=gnu++2a" && make
