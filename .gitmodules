@@ -23,9 +23,6 @@
 [submodule "ThirdParty/lua"]
 	path = ThirdParty/lua
 	url = https://github.com/walterschell/Lua.git
-[submodule "ThirdParty/zep"]
-	path = ThirdParty/zep
-	url = https://github.com/Rezonality/zep
 [submodule "ThirdParty/HazelAudio"]
 	path = ThirdParty/HazelAudio
 	url = https://github.com/DezlowNG/HazelAudioCMake
