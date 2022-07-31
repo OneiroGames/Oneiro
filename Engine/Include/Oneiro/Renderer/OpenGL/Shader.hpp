@@ -17,9 +17,16 @@
 #include "glm/vec3.hpp"
 
 #include "Base.hpp"
+#include "Oneiro/Core/Logger.hpp"
 
 namespace oe::Renderer::GL
 {
+    enum Type : uint8_t
+    {
+        VERTEX = 0,
+        FRAGMENT
+    };
+
     class Shader
     {
       public:
@@ -120,9 +127,19 @@ namespace oe::Renderer::GL
             gl::Uniform4f(GetUniformLocation(name), first, second, third, fourth);
         }
 
+        void SetUniform(const char* name, const glm::vec2& vec) const
+        {
+            gl::Uniform2fv(GetUniformLocation(name), 1, &vec[0]);
+        }
+
         void SetUniform(const char* name, const glm::vec3& vec) const
         {
             gl::Uniform3fv(GetUniformLocation(name), 1, &vec[0]);
+        }
+
+        void SetUniform(const char* name, const glm::vec4& vec) const
+        {
+            gl::Uniform4fv(GetUniformLocation(name), 1, &vec[0]);
         }
 
         void SetUniform(const char* name, const glm::mat4& mat) const
@@ -135,7 +152,25 @@ namespace oe::Renderer::GL
         /// Load shader file and return source code of it.
         /// \param path path to shader
         /// \return source code of shader
-        static std::string LoadShaderFile(const char* path);
+        template <Type ShaderType> static std::string LoadShaderFile(const char* path)
+        {
+            std::ifstream file{path};
+            if (!file.is_open())
+            {
+                log::get("log")->warn("Failed to load shader '" + std::string(path) + "'!");
+                return {};
+            }
+
+            std::stringstream ss;
+            std::string line{};
+
+            while (std::getline(file, line))
+            {
+                ss << line;
+            }
+
+            return ss.str();
+        }
 
         uint32_t Get();
 
@@ -144,16 +179,16 @@ namespace oe::Renderer::GL
 
         static bool CheckCompileError(uint32_t id, const char* type);
 
-        GLint GetUniformLocation(const char* name) const
+        GLint GetUniformLocation(const std::string& name) const
         {
             if (mUniformLocationCache.contains(name))
                 return mUniformLocationCache[name];
-            const GLint location = gl::GetUniformLocation(mID, name);
+            const GLint location = gl::GetUniformLocation(mID, name.c_str());
             mUniformLocationCache[name] = location;
             return location;
         }
 
-        mutable std::unordered_map<const char*, GLint> mUniformLocationCache;
+        mutable std::unordered_map<std::string, GLint> mUniformLocationCache;
         std::vector<uint32_t> mShaderSources{};
         uint32_t mID{};
     };

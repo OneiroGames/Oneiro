@@ -5,10 +5,85 @@
 
 #pragma once
 
+#include "Oneiro/World/Components.hpp"
+#include "OpenGL/Model.hpp"
+#include "glm/mat4x4.hpp"
+
 namespace oe::Renderer
 {
+    struct PointVertex
+    {
+        glm::vec4 Color{};
+        glm::vec4 Position{};
+    };
+
+    struct LineVertex
+    {
+        glm::vec4 Color{};
+        glm::vec4 Position{};
+    };
+
+    struct CircleVertex
+    {
+        glm::vec4 Color{};
+        glm::vec4 WorldPosition{};
+        glm::vec4 LocalPosition{};
+        float Thickness{};
+        float Fade{};
+    };
+
+    struct QuadVertex
+    {
+        glm::vec4 Position{};
+        glm::vec4 Color{};
+        int TexIndex{-1};
+        float Alpha{};
+        float Ar{};
+        bool KeepAr{};
+    };
+
+    struct Limits
+    {
+        uint32_t MaxQuads = 20000;
+        uint32_t MaxVertices = MaxQuads * 4;
+        uint32_t MaxIndices = MaxQuads * 6;
+        uint32_t MaxTextures = 32;
+    };
+
+    struct Statistic
+    {
+        uint32_t Vertices{};
+        uint32_t Indices{};
+        uint32_t Textures{};
+        uint32_t DrawCalls{};
+        uint32_t FlushesCount{};
+    };
+
     void PreInit();
     void Init();
+
+    void Begin(const MainCameraComponent& mainCamera);
+    void RenderSprite2D(const glm::mat4& transform, const GL::Sprite2D& sprite2D);
+    void RenderModel(const glm::mat4& transform, const GL::Model& model);
+    void RenderLine(const glm::mat4& transform, const glm::vec3& fromPos, const glm::vec3& toPos, const glm::vec4& color = glm::vec4(1.0f));
+    void RenderCircle(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f), float thickness = 1.0f, float fade = 0.005f);
+    void RenderPoint(const glm::mat4& transform, const glm::vec4& color);
+    void RenderQuad(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+    void RenderQuad(const glm::mat4& transform, const GL::Texture<gl::TEXTURE_2D>& texture, float alpha = 1.0f, bool keepAr = false,
+                    float ar = 0.0f);
+
+    void StartBatch();
+    void NextBatch();
+    void Flush();
+
+    void End();
+
+    void SetLineWidth(float width);
+    void SetPointSize(float size);
+    const Statistic& GetStats();
+    const Limits& GetLimits();
+    void ResetStats();
+
     void Shutdown();
 } // namespace oe::Renderer
 
@@ -21,7 +96,9 @@ namespace oe::Renderer::GL
 {
     enum DrawMode
     {
-        TRIANGLES = gl::TRIANGLES
+        TRIANGLES = gl::TRIANGLES,
+        LINES = gl::LINES,
+        POINTS = gl::POINTS
     };
 
     enum DataType
@@ -39,18 +116,15 @@ namespace oe::Renderer::GL
         STENCIL_BUFFER = gl::STENCIL_BUFFER_BIT
     };
 
-    void DrawArrays(DrawMode mode, int first, int count);
-
     void DrawArrays(DrawMode mode, int count);
-
-    void ClearColor(float r, float g, float b, float a = 1.0f);
-
+    void DrawArrays(DrawMode mode, int first, int count);
     void DrawElements(DrawMode mode, int count, DataType type, const void* indices = nullptr);
 
     void Clear(uint32_t mask);
+    void ClearColor(float r, float g, float b, float a = 1.0f);
 
-    void Viewport(GLint x, GLint y, GLsizei width, GLsizei height);
     void Viewport(GLsizei width, GLsizei height);
+    void Viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 } // namespace oe::Renderer::GL
 #else
 #define GLFW_INCLUDE_NONE

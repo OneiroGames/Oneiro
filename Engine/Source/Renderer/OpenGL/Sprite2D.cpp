@@ -30,7 +30,7 @@ namespace oe::Renderer::GL
         mTexture = Core::GetTexturesManager().Add(std::make_shared<Texture<gl::TEXTURE_2D>>(path));
     }
 
-    void Sprite2D::Draw()
+    void Sprite2D::Draw() const
     {
         if (!mTexture)
             return;

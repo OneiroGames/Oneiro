@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Oneiro/Animation/Animation.hpp"
+#include "Oneiro/Renderer/OpenGL/Model.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 

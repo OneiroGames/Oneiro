@@ -35,22 +35,6 @@ namespace oe::Renderer::GL
         mUniformLocationCache.clear();
     }
 
-    std::string Shader::LoadShaderFile(const char* path)
-    {
-        std::ifstream file;
-        std::stringstream stringstream;
-
-        file.open(path);
-        if (!file.is_open())
-        {
-            std::cerr << "Shader::LoadShaderFile from " << path << '\n';
-            return {};
-        }
-        stringstream << file.rdbuf();
-        file.close();
-        return stringstream.str();
-    }
-
     uint32_t Shader::Get()
     {
         return mID;

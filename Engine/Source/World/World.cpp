@@ -5,6 +5,7 @@
 
 #include "Oneiro/World/World.hpp"
 #include "Oneiro/Core/Random.hpp"
+#include "Oneiro/Renderer/Renderer.hpp"
 #include "Oneiro/World/Entity.hpp"
 
 #include "yaml-cpp/yaml.h"
@@ -174,6 +175,20 @@ namespace
             out << YAML::EndMap;
         } // End MainCameraComponent
 
+        if (entity.HasComponent<oe::Sprite2DComponent>()) // Begin Sprite2D
+        {
+            out << YAML::Key << "Sprite2DComponent";
+            out << YAML::BeginMap;
+
+            const auto& sprite2D = entity.GetComponent<oe::Sprite2DComponent>().Sprite2D;
+            out << YAML::Key << "Path" << sprite2D->GetTexture()->GetData()->Path;
+            out << YAML::Key << "Alpha" << sprite2D->GetAlpha();
+            out << YAML::Key << "IsUsingTextureAlpha" << sprite2D->IsUseTextureAlpha();
+            out << YAML::Key << "KeepAR" << sprite2D->IsKeepAR();
+
+            out << YAML::EndMap;
+        } // End Sprite2D
+
         if (entity.HasComponent<oe::ModelComponent>())
         {
             // Begin ModelComponent
@@ -211,89 +226,11 @@ namespace
     }
 } // namespace
 
+#include "glm/gtc/random.hpp"
+
 namespace oe::World
 {
-    World::World(const std::string& name, const std::string& path) : mData({name, path})
-    {
-        constexpr auto vertexShaderSrc = R"(
-                #version 330 core
-                layout (location = 0) in vec4 aColor;
-                layout (location = 1) in vec3 aPos;
-                layout (location = 2) in vec2 aNormal;
-                layout (location = 3) in vec2 aTexCoords;
-                uniform mat4 uView;
-                uniform mat4 uProjection;
-                uniform mat4 uModel;
-                out vec4 Color;
-                out vec2 TexCoords;
-                void main()
-                {
-                    gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
-                    TexCoords = aTexCoords;
-                    Color = aColor;
-                }
-            )";
-
-        constexpr auto fragmentShaderSrc = R"(
-                #version 330 core
-                out vec4 FragColor;
-                uniform sampler2D uTexture;
-                in vec4 Color;
-                in vec2 TexCoords;
-                uniform vec3 uColor;
-                void main()
-                {
-                    vec4 texture = texture(uTexture, TexCoords);
-                    if (Color != vec4(0.0) && texture.rgb == vec3(0.0))
-                        FragColor = Color;
-                    else
-                        FragColor = pow(texture, vec4(1.0/2.2));
-                }
-            )";
-
-        constexpr auto spriteVertShaderSrc = R"(
-                #version 330 core
-                layout (location = 0) in vec3 aPos;
-                uniform mat4 uModel;
-                uniform mat4 uView;
-                uniform mat4 uProjection;
-                out vec2 TexCoords;
-                uniform float uAR;
-                uniform bool uKeepAspectRatio;
-                void main()
-                {
-                    vec2 scale = uKeepAspectRatio ? vec2(uAR > 1 ? 1 / uAR : 1, uAR < 1 ? uAR : 1) : vec2(1.0);
-                    TexCoords = aPos.xy;
-                    gl_Position = uProjection * uView * uModel * vec4(aPos.xy * scale, 0.0, 1.0);
-                }
-            )";
-
-        constexpr auto spriteFragShaderSrc = R"(
-                #version 330 core
-                out vec4 FragColor;
-                uniform sampler2D uTexture;
-                uniform bool uUseTextureAlpha;
-                uniform float uTextureAlpha;
-                in vec2 TexCoords;
-                void main()
-                {
-                    vec4 Texture = texture2D(uTexture, TexCoords);
-                    if (Texture.a < 0.35)
-                            discard;
-                    if (uTextureAlpha <= Texture.a)
-                            Texture.a = uTextureAlpha;
-                        FragColor = pow(vec4(Texture.rgba), vec4(1.0/2.2));
-                }
-            )";
-
-        mMainShader.LoadShaderSrc<gl::VERTEX_SHADER>(vertexShaderSrc);
-        mMainShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(fragmentShaderSrc);
-        mMainShader.CreateProgram();
-
-        mSprite2DShader.LoadShaderSrc<gl::VERTEX_SHADER>(spriteVertShaderSrc);
-        mSprite2DShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(spriteFragShaderSrc);
-        mSprite2DShader.CreateProgram();
-    }
+    World::World(const std::string& name, const std::string& path) : mData({name, path}) {}
 
     World::~World() = default;
 
@@ -346,6 +283,7 @@ namespace oe::World
 
             auto mainCameraComponent = entity["MainCameraComponent"];
             auto modelComponent = entity["ModelComponent"];
+            auto spriteComponent = entity["Sprite2DComponent"];
 
             Entity loadedEntity = world->CreateEntity(name);
 
@@ -372,6 +310,14 @@ namespace oe::World
                 mainCamera.PerspectiveNear = mainCameraComponent["PerspectiveNear"].as<float>();
                 mainCamera.PerspectiveFar = mainCameraComponent["PerspectiveFar"].as<float>();
                 mainCamera.Fov = mainCameraComponent["Fov"].as<float>();
+            }
+
+            if (spriteComponent)
+            {
+                auto& sprite = loadedEntity.AddComponent<Sprite2DComponent>().Sprite2D;
+                sprite->Load(spriteComponent["Path"].as<std::string>(), spriteComponent["KeepAR"].as<bool>());
+                sprite->SetAlpha(spriteComponent["Alpha"].as<float>());
+                sprite->SetUsingTextureAlpha(spriteComponent["IsUsingTextureAlpha"].as<bool>());
             }
 
             if (modelComponent)
@@ -470,6 +416,7 @@ namespace oe::World
                 break;
         }
 
+        Renderer::Begin(*mainCamera);
         for (auto entity : view)
         {
             // const auto& tagComponent = view.get<const TagComponent>(entity);
@@ -477,32 +424,12 @@ namespace oe::World
             const auto& modelComponent = mRegistry.try_get<const ModelComponent>(entity);
             const auto& spriteComponent = mRegistry.try_get<const Sprite2DComponent>(entity);
 
-            //            if (modelComponent)
-            //            {
-            //                mMainShader.Use();
-            //                mMainShader.SetUniform("uModel", transformComponent.GetTransform());
-            //                mMainShader.SetUniform("uView", mainCamera->GetViewMatrix());
-            //                mMainShader.SetUniform("uProjection", mainCamera->GetPerspectiveProjection());
-            //                modelComponent->Model->Draw();
-            //            }
+            if (modelComponent)
+                Renderer::RenderModel(transformComponent.GetTransform(), *modelComponent->Model);
 
             if (spriteComponent)
-            {
-                const auto sprite = spriteComponent->Sprite2D;
-                mSprite2DShader.Use();
-                mSprite2DShader.SetUniform("uModel", transformComponent.GetTransform());
-                mSprite2DShader.SetUniform("uView", glm::mat4(1.0f));
-                mSprite2DShader.SetUniform("uProjection", mainCamera->GetOrthoProjection());
-                if (sprite->IsKeepAR())
-                    mSprite2DShader.SetUniform(
-                        "uAR", Core::Root::GetWindow()->GetAr() /
-                                   (static_cast<float>(sprite->GetTexture()->GetData()->Width) / sprite->GetTexture()->GetData()->Height));
-
-                mSprite2DShader.SetUniform("uTextureAlpha", sprite->GetAlpha());
-                mSprite2DShader.SetUniform("uUseTextureAlpha", sprite->IsUseTextureAlpha());
-                mSprite2DShader.SetUniform("uKeepAspectRatio", sprite->IsKeepAR());
-                sprite->Draw();
-            }
+                Renderer::RenderSprite2D(transformComponent.GetTransform(), *spriteComponent->Sprite2D);
         }
+        Renderer::End();
     }
 } // namespace oe::World

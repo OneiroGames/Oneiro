@@ -4,6 +4,8 @@
 //
 
 #include "SandBoxApp.hpp"
+#include "Oneiro/Renderer/Gui/GuiLayer.hpp"
+#include "Oneiro/Renderer/Renderer.hpp"
 
 namespace SandBox
 {
@@ -26,16 +28,9 @@ namespace SandBox
         auto player = mWorld->CreateEntity("Player");
         player.AddComponent<MainCameraComponent>();
 
-        mWorld->CreateEntity("Backpack").AddComponent<ModelComponent>().Model->Load("Assets/Models/backpack/backpack.obj");
+        mWorld->CreateEntity("Sprite2D").AddComponent<Sprite2DComponent>().Sprite2D->Load("Assets/Images/sprite.png");
         mWorld->CreateEntity("Cube").AddComponent<ModelComponent>().Model->Load("Assets/Models/cube.fbx");
-
-        mWorld->CreateEntity("Plane").AddComponent<ModelComponent>().Model->Load(
-            {{{1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, -3.0f, 10.0f}, {0.0f, 1.0f, 0.0f}, {10.0f, 0.0f}},
-             {{1.0f, 1.0f, 1.0f, 1.0f}, {-10.0f, -3.0f, 10.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-             {{1.0f, 1.0f, 1.0f, 1.0f}, {-10.0f, -3.0f, -10.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 10.0f}},
-             {{1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, -3.0f, 10.0f}, {0.0f, 1.0f, 0.0f}, {10.0f, 0.0f}},
-             {{1.0f, 1.0f, 1.0f, 1.0f}, {-10.0f, -3.0f, -10.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 10.0f}},
-             {{1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, -3.0f, -10.0f}, {0.0f, 1.0f, 0.0f}, {10.0f, 10.0f}}});
+        mWorld->GetEntity("Cube").GetComponent<TransformComponent>().Translation = glm::vec3(2.5f, 0.0f, 2.5f);
 
         return true;
     }
@@ -45,14 +40,8 @@ namespace SandBox
         using namespace oe;
 
         const auto playerEntity = mWorld->GetEntity("Player");
-        const auto backpackEntity = mWorld->GetEntity("Backpack");
-        const auto cubeEntity = mWorld->GetEntity("Cube");
 
         auto& mainCamera = playerEntity.GetComponent<MainCameraComponent>();
-
-        auto& backpackTransform = backpackEntity.GetComponent<TransformComponent>();
-        auto& playerTransform = playerEntity.GetComponent<TransformComponent>();
-        auto& cubeTransform = cubeEntity.GetComponent<TransformComponent>();
 
         if (IsKey(Input::Action::PRESS, Input::Key::W))
             mainCamera.UpdateForward(deltaTime);
@@ -63,12 +52,35 @@ namespace SandBox
         if (IsKey(Input::Action::PRESS, Input::Key::A))
             mainCamera.UpdateLeft(deltaTime);
 
-        backpackTransform.Rotation += glm::vec3(deltaTime);
-        playerTransform.Translation = mainCamera.Position;
-        cubeTransform.Translation = glm::vec3(5.5f, 1.0f, 0.5f);
-        cubeTransform.Rotation.x = 90.0f;
-
         mWorld->UpdateEntities();
+
+        {
+            using namespace Renderer;
+            if (GuiLayer::Begin("Stats", nullptr,
+                                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoResize))
+            {
+                const auto& rendererStats = Renderer::GetStats();
+                const auto& rendererLimits = Renderer::GetLimits();
+
+                GuiLayer::SetWindowPos(ImVec2(0, 0));
+
+                GuiLayer::Text("Vertices %i", rendererStats.Vertices);
+                GuiLayer::Text("Indices %i", rendererStats.Indices);
+                GuiLayer::Text("Textures %i", rendererStats.Textures);
+                GuiLayer::Text("Draw Calls %i", rendererStats.DrawCalls);
+                GuiLayer::Text("Flushes Count %i", rendererStats.FlushesCount);
+
+                GuiLayer::Text("Max Quads %i", rendererLimits.MaxQuads);
+                GuiLayer::Text("Max Vertices %i", rendererLimits.MaxVertices);
+                GuiLayer::Text("Max Indices %i", rendererLimits.MaxIndices);
+                GuiLayer::Text("Max Textures %i", rendererLimits.MaxTextures);
+
+                GuiLayer::End();
+            }
+
+            Renderer::ResetStats();
+        }
 
         return true;
     }
