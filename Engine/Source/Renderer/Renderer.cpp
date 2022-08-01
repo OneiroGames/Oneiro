@@ -115,10 +115,11 @@ namespace oe::Renderer
                 #version 330 core
                 layout (location = 0) in vec4 aPos;
                 layout (location = 1) in vec4 aColor;
-                layout (location = 2) in int aTexIndex;
-                layout (location = 3) in float aAlpha;
-                layout (location = 4) in float aAr;
-                layout (location = 5) in int aKeepAr;
+                layout (location = 2) in vec2 aTexCoords;
+                layout (location = 3) in int aTexIndex;
+                layout (location = 4) in float aAlpha;
+                layout (location = 5) in float aAr;
+                layout (location = 6) in int aKeepAr;
                 uniform mat4 uProjection;
                 out vec4 Color;
                 out vec2 TexCoords;
@@ -129,7 +130,7 @@ namespace oe::Renderer
                     vec2 scale = (aKeepAr == 1) ? vec2(aAr > 1 ? 1 / aAr : 1, aAr < 1 ? aAr : 1) : vec2(1.0);
                     gl_Position = uProjection * vec4(aPos.xy * scale, 0.0, 1.0);
                     Color = aColor;
-                    TexCoords = aPos.xy;
+                    TexCoords = aTexCoords;
                     TexIndex = aTexIndex;
                     Alpha = aAlpha;
                 }
@@ -184,7 +185,10 @@ namespace oe::Renderer
                         default: Texture = Color; break;
                     }
 
-                    FragColor = Texture;//pow(vec4(Texture.rgba), vec4(1.0/2.2));
+                    if (TexIndex > 0)
+                        Texture = pow(Texture, vec4(1.0/2.2));
+
+                    FragColor = Texture;
                 }
             )";
 
@@ -471,6 +475,7 @@ namespace oe::Renderer
         {
             quadVertexPtr->Position = transform * vertex;
             quadVertexPtr->TexIndex = textureIndex;
+            quadVertexPtr->TexCoords = glm::vec2(vertex.x, vertex.y);
             quadVertexPtr->Alpha = alpha;
             quadVertexPtr->KeepAr = keepAr;
             quadVertexPtr->Ar = ar;
@@ -704,12 +709,13 @@ namespace
         quadVBO.BufferData<QuadVertex>(limits.MaxVertices, nullptr);
         quadEBO.Bind();
         quadEBO.BufferData(limits.MaxIndices, CreateQuadIndices().data());
-        GL::VertexAttribPointer(0, 4, 12);
-        GL::VertexAttribPointer(1, 4, 12, 4);
-        GL::VertexAttribPointer(2, 1, 12, 8);
-        GL::VertexAttribPointer(3, 1, 12, 9);
-        GL::VertexAttribPointer(4, 1, 12, 10);
-        GL::VertexAttribPointer(5, 1, 12, 11);
+        GL::VertexAttribPointer(0, 4, 14);
+        GL::VertexAttribPointer(1, 4, 14, 4);
+        GL::VertexAttribPointer(2, 2, 14, 8);
+        GL::VertexAttribPointer(3, 1, 14, 10);
+        GL::VertexAttribPointer(4, 1, 14, 11);
+        GL::VertexAttribPointer(5, 1, 14, 12);
+        GL::VertexAttribPointer(6, 1, 14, 13);
         // End Quad
     }
 

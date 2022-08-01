@@ -37,6 +37,7 @@ namespace oe::Renderer
     {
         glm::vec4 Position{};
         glm::vec4 Color{};
+        glm::vec2 TexCoords{};
         int TexIndex{-1};
         float Alpha{};
         float Ar{};
