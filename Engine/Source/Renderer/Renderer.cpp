@@ -10,6 +10,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
+#include <array>
+
 namespace
 {
     oe::Renderer::Statistic stats{};
@@ -58,7 +60,7 @@ namespace
     std::array<const oe::Renderer::GL::Texture<gl::TEXTURE_2D>*, limits.MaxTextures> textureSlots{};
 
     void SetupBuffers();
-    constexpr std::array<uint32_t, limits.MaxIndices> CreateQuadIndices();
+    std::array<uint32_t, limits.MaxIndices> CreateQuadIndices();
 }; // namespace
 
 namespace oe::Renderer
@@ -476,7 +478,7 @@ namespace
         // End Quad
     }
 
-    constexpr std::array<uint32_t, limits.MaxIndices> CreateQuadIndices()
+    std::array<uint32_t, limits.MaxIndices> CreateQuadIndices()
     {
         std::array<uint32_t, limits.MaxIndices> indices{};
 
