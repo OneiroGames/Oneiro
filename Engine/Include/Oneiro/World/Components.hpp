@@ -7,6 +7,7 @@
 
 #include "Oneiro/Animation/Animation.hpp"
 #include "Oneiro/Renderer/OpenGL/Model.hpp"
+#include "Oneiro/Renderer/ParticleSystem.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -105,6 +106,30 @@ namespace oe
         ModelComponent(Renderer::GL::Model* model);
 
         Renderer::GL::Model* Model;
+    };
+
+    struct ParticleSystemComponent
+    {
+        ParticleSystemComponent() = default;
+        Renderer::ParticleSystem ParticleSystem{};
+
+        Renderer::ParticleProps* CreateParticleProps(const std::string& name, uint32_t count)
+        {
+            return (ParticlesProps[name] = std::make_pair(std::make_shared<Renderer::ParticleProps>(), count)).first.get();
+        }
+
+        Renderer::ParticleProps* GetParticleProps(const std::string& name)
+        {
+            return ParticlesProps[name].first.get();
+        }
+
+        void DestroyParticleProps(const std::string& name)
+        {
+            if (ParticlesProps.find(name) != ParticlesProps.end())
+                ParticlesProps.erase(name);
+        }
+
+        std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::ParticleProps>, uint32_t>> ParticlesProps;
     };
 
     struct MainCameraComponent

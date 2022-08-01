@@ -6,6 +6,7 @@
 #include "Oneiro/World/World.hpp"
 #include "Oneiro/Core/Random.hpp"
 #include "Oneiro/Renderer/Renderer.hpp"
+#include "Oneiro/Runtime/Engine.hpp"
 #include "Oneiro/World/Entity.hpp"
 
 #include "yaml-cpp/yaml.h"
@@ -217,6 +218,47 @@ namespace
             out << YAML::EndMap;
         }
 
+        if (entity.HasComponent<oe::ParticleSystemComponent>())
+        {
+            const auto& particleSystemComponent = entity.GetComponent<oe::ParticleSystemComponent>();
+            const auto& particlesProps = particleSystemComponent.ParticlesProps;
+
+            out << YAML::Key << "ParticleSystemComponent";
+            out << YAML::BeginMap;
+
+            out << YAML::Key << "ParticlesProps";
+            out << YAML::BeginMap;
+
+            int i{};
+            for (const auto& particle : particlesProps)
+            {
+                const auto& props = particle.second.first;
+
+                out << YAML::Key << i;
+                out << YAML::BeginMap;
+                out << YAML::Key << "Name" << particle.first;
+                out << YAML::Key << "Count" << particle.second.second;
+                out << YAML::Key << "ColorBegin" << props->ColorBegin;
+                out << YAML::Key << "ColorEnd" << props->ColorEnd;
+                out << YAML::Key << "Position" << props->Position;
+                out << YAML::Key << "Rotation" << props->Rotation;
+                out << YAML::Key << "Velocity" << props->Velocity;
+                out << YAML::Key << "VelocityVariation" << props->VelocityVariation;
+                out << YAML::Key << "RotationAngleBegin" << props->RotationAngleBegin;
+                out << YAML::Key << "RotationAngleEnd" << props->RotationAngleEnd;
+                out << YAML::Key << "SizeBegin" << props->SizeBegin;
+                out << YAML::Key << "SizeEnd" << props->SizeEnd;
+                out << YAML::Key << "SizeVariation" << props->SizeVariation;
+                out << YAML::Key << "LifeTime" << props->LifeTime;
+                out << YAML::EndMap;
+
+                i++;
+            }
+            out << YAML::EndMap;
+
+            out << YAML::EndMap;
+        }
+
         if (entity.HasComponent<oe::Sprite2DComponent>()) // Begin Sprite2D
         {
             out << YAML::Key << "Sprite2DComponent";
@@ -330,6 +372,7 @@ namespace oe::World
             auto lineComponent = entity["LineComponent"];
             auto circleComponent = entity["CircleComponent"];
             auto quadComponent = entity["QuadComponent"];
+            auto particleSystemComponent = entity["ParticleSystemComponent"];
 
             Entity loadedEntity = world->CreateEntity(name);
 
@@ -385,6 +428,38 @@ namespace oe::World
             {
                 auto& quad = loadedEntity.AddComponent<QuadComponent>();
                 quad.Color = quadComponent["Color"].as<glm::vec4>();
+            }
+
+            if (particleSystemComponent)
+            {
+                auto& particleSystem = loadedEntity.AddComponent<ParticleSystemComponent>();
+                if (particleSystemComponent["ParticlesProps"].IsDefined())
+                {
+                    int i{};
+                    while (true)
+                    {
+                        const auto& nd = particleSystemComponent["ParticlesProps"][std::to_string(i)];
+                        if (nd.IsDefined())
+                        {
+                            auto props = particleSystem.CreateParticleProps(nd["Name"].as<std::string>(), nd["Count"].as<uint32_t>());
+                            props->ColorBegin = nd["ColorBegin"].as<glm::vec4>();
+                            props->ColorEnd = nd["ColorEnd"].as<glm::vec4>();
+                            props->Position = nd["Position"].as<glm::vec2>();
+                            props->Rotation = nd["Rotation"].as<glm::vec3>();
+                            props->Velocity = nd["Velocity"].as<glm::vec2>();
+                            props->VelocityVariation = nd["VelocityVariation"].as<glm::vec2>();
+                            props->RotationAngleBegin = nd["RotationAngleBegin"].as<float>();
+                            props->RotationAngleEnd = nd["RotationAngleEnd"].as<float>();
+                            props->SizeBegin = nd["SizeBegin"].as<float>();
+                            props->SizeEnd = nd["SizeEnd"].as<float>();
+                            props->SizeVariation = nd["SizeVariation"].as<float>();
+                            props->LifeTime = nd["LifeTime"].as<float>();
+                        }
+                        else
+                            break;
+                        i++;
+                    }
+                }
             }
 
             if (spriteComponent)
@@ -502,6 +577,7 @@ namespace oe::World
             const auto& lineComponent = mRegistry.try_get<const LineComponent>(entity);
             const auto& circleComponent = mRegistry.try_get<const CircleComponent>(entity);
             const auto& quadComponent = mRegistry.try_get<const QuadComponent>(entity);
+            auto particleSystemComponent = mRegistry.try_get<ParticleSystemComponent>(entity);
 
             if (modelComponent)
                 Renderer::RenderModel(transformComponent.GetTransform(), *modelComponent->Model);
@@ -522,6 +598,17 @@ namespace oe::World
 
             if (quadComponent)
                 Renderer::RenderQuad(transformComponent.GetTransform(), quadComponent->Color);
+
+            if (particleSystemComponent)
+            {
+                const auto& particleProps = particleSystemComponent->ParticlesProps;
+                for (const auto& particle : particleProps)
+                    for (uint32_t i{}; i < particle.second.second; ++i)
+                        particleSystemComponent->ParticleSystem.Emit(*particle.second.first);
+
+                particleSystemComponent->ParticleSystem.Update(Runtime::Engine::GetDeltaTime());
+                particleSystemComponent->ParticleSystem.Render();
+            }
         }
         Renderer::End();
     }

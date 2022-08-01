@@ -69,7 +69,8 @@ namespace oe::Renderer
         particle.Velocity.y += particleProps.VelocityVariation.y * (Core::Random::DiceFloat() - 0.5f);
 
         particle.Rotation = particleProps.Rotation;
-        particle.RotationAngle = Core::Random::DiceFloat() * 90.0f * glm::pi<float>();
+        particle.RotationAngle =
+            Core::Random::DiceFloat(particleProps.RotationAngleBegin, particleProps.RotationAngleEnd) * glm::pi<float>();
 
         particle.SizeBegin = particleProps.SizeBegin + particleProps.SizeVariation * (Core::Random::DiceFloat() - 0.5f);
         particle.SizeEnd = particleProps.SizeEnd;
