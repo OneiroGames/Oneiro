@@ -263,16 +263,15 @@ namespace oe::Renderer
 
     void Flush()
     {
+        gl::Disable(gl::DEPTH_TEST);
         if (lineVertexCount)
         {
             auto dataSize = (uint32_t)((uint8_t*)lineVertexPtr - (uint8_t*)lineVertexBase);
-            gl::Disable(gl::DEPTH_TEST);
             lineShader.Use();
             lineVAO.Bind();
             lineVBO.Bind();
             lineVBO.BufferSubData(dataSize, 0, lineVertexBase);
             GL::DrawArrays(GL::LINES, lineVertexCount);
-            gl::Enable(gl::DEPTH_TEST);
 
             stats.DrawCalls++;
         }
@@ -280,13 +279,11 @@ namespace oe::Renderer
         if (pointVertexCount)
         {
             auto dataSize = (uint32_t)((uint8_t*)pointVertexPtr - (uint8_t*)pointVertexBase);
-            gl::Disable(gl::DEPTH_TEST);
             pointShader.Use();
             pointVAO.Bind();
             pointVBO.Bind();
             pointVBO.BufferSubData(dataSize, 0, pointVertexBase);
             GL::DrawArrays(GL::POINTS, pointVertexCount);
-            gl::Enable(gl::DEPTH_TEST);
 
             stats.DrawCalls++;
         }
@@ -294,14 +291,12 @@ namespace oe::Renderer
         if (circleIndicesCount)
         {
             auto dataSize = (uint32_t)((uint8_t*)circleVertexPtr - (uint8_t*)circleVertexBase);
-            gl::Disable(gl::DEPTH_TEST);
             circleShader.Use();
             circleVAO.Bind();
             circleVBO.Bind();
             circleVBO.BufferSubData(dataSize, 0, circleVertexBase);
             quadEBO.Bind();
             GL::DrawElements(GL::TRIANGLES, circleIndicesCount, GL::UNSIGNED_INT);
-            gl::Enable(gl::DEPTH_TEST);
 
             stats.DrawCalls++;
         }
@@ -322,6 +317,8 @@ namespace oe::Renderer
 
             stats.DrawCalls++;
         }
+
+        gl::Enable(gl::DEPTH_TEST);
 
         stats.FlushesCount++;
     }
