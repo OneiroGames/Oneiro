@@ -145,6 +145,7 @@ namespace
             out << YAML::EndMap;
         } // End TransformComponent
 
+        // TODO: without call function "HasComponent"
         if (entity.HasComponent<oe::MainCameraComponent>())
         {
             // Begin MainCameraComponent
@@ -174,6 +175,47 @@ namespace
 
             out << YAML::EndMap;
         } // End MainCameraComponent
+
+        if (entity.HasComponent<oe::PointComponent>())
+        {
+            const auto& pointComponent = entity.GetComponent<oe::PointComponent>();
+            out << YAML::Key << "PointComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << pointComponent.Color;
+            out << YAML::Key << "Size" << pointComponent.Size;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::LineComponent>())
+        {
+            const auto& lineComponent = entity.GetComponent<oe::LineComponent>();
+            out << YAML::Key << "LineComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << lineComponent.Color;
+            out << YAML::Key << "FromPosition" << lineComponent.FromPosition;
+            out << YAML::Key << "ToPosition" << lineComponent.ToPosition;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::CircleComponent>())
+        {
+            const auto& circleComponent = entity.GetComponent<oe::CircleComponent>();
+            out << YAML::Key << "CircleComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << circleComponent.Color;
+            out << YAML::Key << "Thickness" << circleComponent.Thickness;
+            out << YAML::Key << "Fade" << circleComponent.Fade;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::QuadComponent>())
+        {
+            const auto& quadComponent = entity.GetComponent<oe::QuadComponent>();
+            out << YAML::Key << "QuadComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << quadComponent.Color;
+            out << YAML::EndMap;
+        }
 
         if (entity.HasComponent<oe::Sprite2DComponent>()) // Begin Sprite2D
         {
@@ -284,6 +326,10 @@ namespace oe::World
             auto mainCameraComponent = entity["MainCameraComponent"];
             auto modelComponent = entity["ModelComponent"];
             auto spriteComponent = entity["Sprite2DComponent"];
+            auto pointComponent = entity["PointComponent"];
+            auto lineComponent = entity["LineComponent"];
+            auto circleComponent = entity["CircleComponent"];
+            auto quadComponent = entity["QuadComponent"];
 
             Entity loadedEntity = world->CreateEntity(name);
 
@@ -310,6 +356,35 @@ namespace oe::World
                 mainCamera.PerspectiveNear = mainCameraComponent["PerspectiveNear"].as<float>();
                 mainCamera.PerspectiveFar = mainCameraComponent["PerspectiveFar"].as<float>();
                 mainCamera.Fov = mainCameraComponent["Fov"].as<float>();
+            }
+
+            if (pointComponent)
+            {
+                auto& point = loadedEntity.AddComponent<PointComponent>();
+                point.Color = pointComponent["Color"].as<glm::vec4>();
+                point.Size = pointComponent["Size"].as<float>();
+            }
+
+            if (lineComponent)
+            {
+                auto& line = loadedEntity.AddComponent<LineComponent>();
+                line.Color = lineComponent["Color"].as<glm::vec4>();
+                line.FromPosition = lineComponent["FromPosition"].as<glm::vec3>();
+                line.ToPosition = lineComponent["ToPosition"].as<glm::vec3>();
+            }
+
+            if (circleComponent)
+            {
+                auto& circle = loadedEntity.AddComponent<CircleComponent>();
+                circle.Color = circleComponent["Color"].as<glm::vec4>();
+                circle.Thickness = circleComponent["Thickness"].as<float>();
+                circle.Fade = circleComponent["Fade"].as<float>();
+            }
+
+            if (quadComponent)
+            {
+                auto& quad = loadedEntity.AddComponent<QuadComponent>();
+                quad.Color = quadComponent["Color"].as<glm::vec4>();
             }
 
             if (spriteComponent)
