@@ -423,12 +423,30 @@ namespace oe::World
             const auto& transformComponent = view.get<const TransformComponent>(entity);
             const auto& modelComponent = mRegistry.try_get<const ModelComponent>(entity);
             const auto& spriteComponent = mRegistry.try_get<const Sprite2DComponent>(entity);
+            const auto& pointComponent = mRegistry.try_get<const PointComponent>(entity);
+            const auto& lineComponent = mRegistry.try_get<const LineComponent>(entity);
+            const auto& circleComponent = mRegistry.try_get<const CircleComponent>(entity);
+            const auto& quadComponent = mRegistry.try_get<const QuadComponent>(entity);
 
             if (modelComponent)
                 Renderer::RenderModel(transformComponent.GetTransform(), *modelComponent->Model);
 
             if (spriteComponent)
                 Renderer::RenderSprite2D(transformComponent.GetTransform(), *spriteComponent->Sprite2D);
+
+            if (pointComponent)
+                Renderer::RenderPoint(transformComponent.GetTransform(), pointComponent->Color, pointComponent->Size);
+
+            if (lineComponent)
+                Renderer::RenderLine(transformComponent.GetTransform(), lineComponent->FromPosition, lineComponent->ToPosition,
+                                     lineComponent->Color);
+
+            if (circleComponent)
+                Renderer::RenderCircle(transformComponent.GetTransform(), circleComponent->Color, circleComponent->Thickness,
+                                       circleComponent->Fade);
+
+            if (quadComponent)
+                Renderer::RenderQuad(transformComponent.GetTransform(), quadComponent->Color);
         }
         Renderer::End();
     }

@@ -27,6 +27,11 @@ namespace oe
         return translate(glm::mat4(1.0f), Translation) * rotation * scale(glm::mat4(1.0f), Scale);
     }
 
+    PointComponent::PointComponent() = default;
+    LineComponent::LineComponent() = default;
+    CircleComponent::CircleComponent() = default;
+    QuadComponent::QuadComponent() = default;
+
     Sprite2DComponent::Sprite2DComponent() : Sprite2D(new Renderer::GL::Sprite2D) {}
 
     Sprite2DComponent::Sprite2DComponent(const Sprite2DComponent&) = default;

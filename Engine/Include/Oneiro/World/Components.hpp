@@ -45,6 +45,38 @@ namespace oe
         [[nodiscard]] glm::mat4 GetTransform() const;
     };
 
+    struct PointComponent
+    {
+        PointComponent();
+
+        glm::vec4 Color{1.0f};
+        float Size{1.0f};
+    };
+
+    struct LineComponent
+    {
+        LineComponent();
+
+        glm::vec4 Color{1.0f};
+        glm::vec3 FromPosition{};
+        glm::vec3 ToPosition{};
+    };
+
+    struct CircleComponent
+    {
+        CircleComponent();
+
+        glm::vec4 Color{1.0f};
+        float Thickness{1.0f};
+        float Fade{0.005f};
+    };
+
+    struct QuadComponent
+    {
+        QuadComponent();
+        glm::vec4 Color{1.0f};
+    };
+
     struct Sprite2DComponent
     {
         Sprite2DComponent();
