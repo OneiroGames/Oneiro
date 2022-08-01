@@ -17,7 +17,7 @@ namespace
 
     oe::Renderer::GL::Shader sprite2DShader{};
     oe::Renderer::GL::Shader mainShader{};
-    oe::Renderer::GL::Shader simpleShader{};
+    oe::Renderer::GL::Shader pointShader{};
     oe::Renderer::GL::Shader circleShader{};
     oe::Renderer::GL::Shader lineShader{};
     oe::Renderer::GL::Shader quadShader{};
@@ -74,6 +74,7 @@ namespace oe::Renderer
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         gl::Enable(gl::DEPTH_TEST);
         gl::Enable(gl::LINE_SMOOTH);
+        gl::Enable(gl::PROGRAM_POINT_SIZE);
 
         constexpr auto spriteVertShaderSrc = R"(
                 #version 330 core
@@ -276,19 +277,22 @@ namespace oe::Renderer
                 }
             )";
 
-        constexpr auto simpleVertShader = R"(
+        constexpr auto pointVertShaderSrc = R"(
                 #version 330 core
                 layout (location = 0) in vec4 aColor;
                 layout (location = 1) in vec4 aPos;
+                layout (location = 2) in float aSize;
+                uniform mat4 uProjection;
                 out vec4 Color;
                 void main()
                 {
-                    gl_Position = vec4(aPos.xyz, 1.0);;
+                    gl_PointSize = aSize;
+                    gl_Position = uProjection * vec4(aPos.xyz, 1.0);;
                     Color = aColor;
                 }
             )";
 
-        constexpr auto simpleFragShader = R"(
+        constexpr auto pointFragShaderSrc = R"(
                 #version 330 core
                 out vec4 FragColor;
                 in vec4 Color;
@@ -314,9 +318,9 @@ namespace oe::Renderer
         circleShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(circleFragShaderSrc);
         circleShader.CreateProgram();
 
-        simpleShader.LoadShaderSrc<gl::VERTEX_SHADER>(simpleVertShader);
-        simpleShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(simpleFragShader);
-        simpleShader.CreateProgram();
+        pointShader.LoadShaderSrc<gl::VERTEX_SHADER>(pointVertShaderSrc);
+        pointShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(pointFragShaderSrc);
+        pointShader.CreateProgram();
 
         quadShader.LoadShaderSrc<gl::VERTEX_SHADER>(quadVertShaderSrc);
         quadShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(quadFragShaderSrc);
@@ -343,6 +347,9 @@ namespace oe::Renderer
 
         quadShader.Use();
         quadShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
+
+        pointShader.Use();
+        pointShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
 
         circleShader.Use();
         circleShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
@@ -418,20 +425,21 @@ namespace oe::Renderer
         stats.Indices += 6;
     }
 
-    void RenderPoint(const glm::mat4& transform, const glm::vec4& color)
+    void RenderPoint(const glm::mat4& transform, const glm::vec4& color, float size /*= 1.0f*/)
     {
         if (pointVertexCount >= limits.MaxVertices)
             NextBatch();
 
         pointVertexPtr->Color = color;
         pointVertexPtr->Position = transform * glm::vec4(1.0f);
+        pointVertexPtr->Size = size;
         pointVertexPtr++;
         pointVertexCount++;
         stats.Vertices++;
     }
 
-    void Renderer::RenderQuad(const glm::mat4& transform, const GL::Texture<gl::TEXTURE_2D>& texture, float alpha /*= 1.0f*/,
-                              bool keepAr /*= false*/, float ar /*= 0.0f*/)
+    void RenderQuad(const glm::mat4& transform, const GL::Texture<gl::TEXTURE_2D>& texture, float alpha /*= 1.0f*/, bool keepAr /*= false*/,
+                    float ar /*= 0.0f*/)
     {
         if (quadIndicesCount >= limits.MaxIndices)
             NextBatch();
@@ -472,7 +480,7 @@ namespace oe::Renderer
         stats.Textures++;
     }
 
-    void Renderer::RenderQuad(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
+    void RenderQuad(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
     {
         if (quadIndicesCount >= limits.MaxIndices)
             NextBatch();
@@ -507,7 +515,7 @@ namespace oe::Renderer
         {
             auto dataSize = (uint32_t)((uint8_t*)pointVertexPtr - (uint8_t*)pointVertexBase);
             gl::Disable(gl::DEPTH_TEST);
-            simpleShader.Use();
+            pointShader.Use();
             pointVAO.Bind();
             pointVBO.Bind();
             pointVBO.BufferSubData(dataSize, 0, pointVertexBase);
@@ -681,8 +689,9 @@ namespace
         pointVAO.Bind();
         pointVBO.Bind();
         pointVBO.BufferData<PointVertex>(limits.MaxVertices, nullptr);
-        GL::VertexAttribPointer(0, 4, 8);
-        GL::VertexAttribPointer(1, 4, 8, 4);
+        GL::VertexAttribPointer(0, 4, 9);
+        GL::VertexAttribPointer(1, 4, 9, 4);
+        GL::VertexAttribPointer(2, 1, 9, 8);
         // End Point
 
         // Begin Quad
