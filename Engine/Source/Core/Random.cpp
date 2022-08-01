@@ -21,12 +21,19 @@ namespace oe::Core
 
     float Random::DiceFloat(float min, float max)
     {
-        const std::uniform_real_distribution uid(min, max);
+        std::uniform_real_distribution uid(min, max);
 #ifdef _MSC_BUILD
         return uid(mGenerator);
 #else
-        return 1.0f;
+
+        return uid(mGenerator);
 #endif
+    }
+
+    float Random::DiceFloat()
+    {
+        std::uniform_real_distribution uid;
+        return uid(mGenerator);
     }
 
     double Random::DiceDouble(double min, double max)
@@ -38,7 +45,6 @@ namespace oe::Core
         return 1.0;
 #endif
     }
-
     std::string Random::DiceUuid()
     {
         std::stringstream ss{};

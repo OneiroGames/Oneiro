@@ -139,6 +139,7 @@ namespace oe::Renderer
                 #version 330 core
                 out vec4 FragColor;
                 uniform sampler2D uTextures[32];
+                in vec4 Color;
                 in vec2 TexCoords;
                 flat in int TexIndex;
                 in float Alpha;
@@ -180,10 +181,10 @@ namespace oe::Renderer
                         case 29: Texture = texture(uTextures[29], TexCoords); break;
                         case 30: Texture = texture(uTextures[30], TexCoords); break;
                         case 31: Texture = texture(uTextures[31], TexCoords); break;
-                        default: Texture = vec4(1.0); break;
+                        default: Texture = Color; break;
                     }
 
-                    FragColor = pow(vec4(Texture.rgba), vec4(1.0/2.2));
+                    FragColor = Texture;//pow(vec4(Texture.rgba), vec4(1.0/2.2));
                 }
             )";
 
