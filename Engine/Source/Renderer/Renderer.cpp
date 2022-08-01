@@ -190,7 +190,7 @@ namespace oe::Renderer
         stats.Indices += 6;
     }
 
-    void RenderPoint(const glm::mat4& transform, const glm::vec4& color, float size /*= 1.0f*/)
+    void RenderPoint(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/, float size /*= 1.0f*/)
     {
         if (pointVertexCount >= limits.MaxVertices)
             NextBatch();

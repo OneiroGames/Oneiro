@@ -69,7 +69,7 @@ namespace oe::Renderer
     void RenderModel(const glm::mat4& transform, const GL::Model& model);
     void RenderLine(const glm::mat4& transform, const glm::vec3& fromPos, const glm::vec3& toPos, const glm::vec4& color = glm::vec4(1.0f));
     void RenderCircle(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f), float thickness = 1.0f, float fade = 0.005f);
-    void RenderPoint(const glm::mat4& transform, const glm::vec4& color, float size = 1.0f);
+    void RenderPoint(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f), float size = 1.0f);
     void RenderQuad(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
     void RenderQuad(const glm::mat4& transform, const GL::Texture<gl::TEXTURE_2D>& texture, float alpha = 1.0f, bool keepAr = false,
                     float ar = 0.0f);
