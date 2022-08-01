@@ -21,7 +21,7 @@
 
 namespace oe::Renderer::GL
 {
-    enum Type : uint8_t
+    enum ShaderType : uint8_t
     {
         VERTEX = 0,
         FRAGMENT
@@ -149,28 +149,7 @@ namespace oe::Renderer::GL
 
         [[maybe_unused]] void ClearUniformLocationCache();
 
-        /// Load shader file and return source code of it.
-        /// \param path path to shader
-        /// \return source code of shader
-        template <Type ShaderType> static std::string LoadShaderFile(const char* path)
-        {
-            std::ifstream file{path};
-            if (!file.is_open())
-            {
-                log::get("log")->warn("Failed to load shader '" + std::string(path) + "'!");
-                return {};
-            }
-
-            std::stringstream ss;
-            std::string line{};
-
-            while (std::getline(file, line))
-            {
-                ss << line;
-            }
-
-            return ss.str();
-        }
+        bool LoadShaderFile(const char* path);
 
         uint32_t Get();
 
