@@ -21,8 +21,8 @@ namespace oe::World
         template <typename T, typename... Args> constexpr T& AddComponent(Args&&... args)
         {
             if (HasComponent<T>())
-                return mScene->mRegistry.get<T>(mHandle);
-            T& component = mScene->mRegistry.emplace<T>(mHandle, std::forward<Args>(args)...);
+                return mWorld->mRegistry.get<T>(mHandle);
+            T& component = mWorld->mRegistry.emplace<T>(mHandle, std::forward<Args>(args)...);
             return component;
         }
 
@@ -30,17 +30,17 @@ namespace oe::World
         {
             if (!HasComponent<T>())
                 OE_THROW_ERROR("Scene", "Entity \"" + GetComponent<TagComponent>().Tag + "\" does not have component!");
-            return mScene->mRegistry.get<T>(mHandle);
+            return mWorld->mRegistry.get<T>(mHandle);
         }
 
         template <typename T> [[nodiscard]] constexpr bool HasComponent() const
         {
-            return mScene->mRegistry.try_get<T>(mHandle);
+            return mWorld->mRegistry.try_get<T>(mHandle);
         }
 
         template <typename T> constexpr void RemoveComponent()
         {
-            mScene->mRegistry.remove<T>(mHandle);
+            mWorld->mRegistry.remove<T>(mHandle);
         }
 
         constexpr operator bool() const
@@ -60,7 +60,7 @@ namespace oe::World
 
         constexpr bool operator==(const Entity& other) const
         {
-            return mHandle == other.mHandle && mScene == other.mScene;
+            return mHandle == other.mHandle && mWorld == other.mWorld;
         }
 
         constexpr bool operator!=(const Entity& other) const
@@ -70,6 +70,6 @@ namespace oe::World
 
       private:
         entt::entity mHandle{};
-        World* mScene{};
+        World* mWorld{};
     };
 } // namespace oe::World
