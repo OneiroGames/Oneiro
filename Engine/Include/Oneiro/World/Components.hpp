@@ -111,24 +111,12 @@ namespace oe
     struct ParticleSystemComponent
     {
         ParticleSystemComponent() = default;
+
+        Renderer::ParticleProps* CreateParticleProps(const std::string& name, uint32_t count);
+        Renderer::ParticleProps* GetParticleProps(const std::string& name);
+        void DestroyParticleProps(const std::string& name);
+
         Renderer::ParticleSystem ParticleSystem{};
-
-        Renderer::ParticleProps* CreateParticleProps(const std::string& name, uint32_t count)
-        {
-            return (ParticlesProps[name] = std::make_pair(std::make_shared<Renderer::ParticleProps>(), count)).first.get();
-        }
-
-        Renderer::ParticleProps* GetParticleProps(const std::string& name)
-        {
-            return ParticlesProps[name].first.get();
-        }
-
-        void DestroyParticleProps(const std::string& name)
-        {
-            if (ParticlesProps.find(name) != ParticlesProps.end())
-                ParticlesProps.erase(name);
-        }
-
         std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::ParticleProps>, uint32_t>> ParticlesProps;
     };
 
