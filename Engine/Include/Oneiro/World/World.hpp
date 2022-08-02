@@ -56,8 +56,6 @@ namespace oe::World
       private:
         entt::registry mRegistry{};
         WorldData mData{};
-        Renderer::GL::Shader mMainShader{};
-        Renderer::GL::Shader mSprite2DShader{};
         friend class Entity;
     };
 } // namespace oe::World

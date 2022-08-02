@@ -5,6 +5,8 @@
 
 #include "Oneiro/World/World.hpp"
 #include "Oneiro/Core/Random.hpp"
+#include "Oneiro/Renderer/Renderer.hpp"
+#include "Oneiro/Runtime/Engine.hpp"
 #include "Oneiro/World/Entity.hpp"
 
 #include "yaml-cpp/yaml.h"
@@ -144,6 +146,7 @@ namespace
             out << YAML::EndMap;
         } // End TransformComponent
 
+        // TODO: without call function "HasComponent"
         if (entity.HasComponent<oe::MainCameraComponent>())
         {
             // Begin MainCameraComponent
@@ -173,6 +176,102 @@ namespace
 
             out << YAML::EndMap;
         } // End MainCameraComponent
+
+        if (entity.HasComponent<oe::PointComponent>())
+        {
+            const auto& pointComponent = entity.GetComponent<oe::PointComponent>();
+            out << YAML::Key << "PointComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << pointComponent.Color;
+            out << YAML::Key << "Size" << pointComponent.Size;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::LineComponent>())
+        {
+            const auto& lineComponent = entity.GetComponent<oe::LineComponent>();
+            out << YAML::Key << "LineComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << lineComponent.Color;
+            out << YAML::Key << "FromPosition" << lineComponent.FromPosition;
+            out << YAML::Key << "ToPosition" << lineComponent.ToPosition;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::CircleComponent>())
+        {
+            const auto& circleComponent = entity.GetComponent<oe::CircleComponent>();
+            out << YAML::Key << "CircleComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << circleComponent.Color;
+            out << YAML::Key << "Thickness" << circleComponent.Thickness;
+            out << YAML::Key << "Fade" << circleComponent.Fade;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::QuadComponent>())
+        {
+            const auto& quadComponent = entity.GetComponent<oe::QuadComponent>();
+            out << YAML::Key << "QuadComponent";
+            out << YAML::BeginMap;
+            out << YAML::Key << "Color" << quadComponent.Color;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::ParticleSystemComponent>())
+        {
+            const auto& particleSystemComponent = entity.GetComponent<oe::ParticleSystemComponent>();
+            const auto& particlesProps = particleSystemComponent.ParticlesProps;
+
+            out << YAML::Key << "ParticleSystemComponent";
+            out << YAML::BeginMap;
+
+            out << YAML::Key << "ParticlesProps";
+            out << YAML::BeginMap;
+
+            int i{};
+            for (const auto& particle : particlesProps)
+            {
+                const auto& props = particle.second.first;
+
+                out << YAML::Key << i;
+                out << YAML::BeginMap;
+                out << YAML::Key << "Name" << particle.first;
+                out << YAML::Key << "Count" << particle.second.second;
+                out << YAML::Key << "ColorBegin" << props->ColorBegin;
+                out << YAML::Key << "ColorEnd" << props->ColorEnd;
+                out << YAML::Key << "Position" << props->Position;
+                out << YAML::Key << "Rotation" << props->Rotation;
+                out << YAML::Key << "Velocity" << props->Velocity;
+                out << YAML::Key << "VelocityVariation" << props->VelocityVariation;
+                out << YAML::Key << "RotationAngleBegin" << props->RotationAngleBegin;
+                out << YAML::Key << "RotationAngleEnd" << props->RotationAngleEnd;
+                out << YAML::Key << "SizeBegin" << props->SizeBegin;
+                out << YAML::Key << "SizeEnd" << props->SizeEnd;
+                out << YAML::Key << "SizeVariation" << props->SizeVariation;
+                out << YAML::Key << "LifeTime" << props->LifeTime;
+                out << YAML::EndMap;
+
+                i++;
+            }
+            out << YAML::EndMap;
+
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<oe::Sprite2DComponent>()) // Begin Sprite2D
+        {
+            out << YAML::Key << "Sprite2DComponent";
+            out << YAML::BeginMap;
+
+            const auto& sprite2D = entity.GetComponent<oe::Sprite2DComponent>().Sprite2D;
+            out << YAML::Key << "Path" << sprite2D->GetTexture()->GetData()->Path;
+            out << YAML::Key << "Alpha" << sprite2D->GetAlpha();
+            out << YAML::Key << "IsUsingTextureAlpha" << sprite2D->IsUseTextureAlpha();
+            out << YAML::Key << "KeepAR" << sprite2D->IsKeepAR();
+
+            out << YAML::EndMap;
+        } // End Sprite2D
 
         if (entity.HasComponent<oe::ModelComponent>())
         {
@@ -211,89 +310,11 @@ namespace
     }
 } // namespace
 
+#include "glm/gtc/random.hpp"
+
 namespace oe::World
 {
-    World::World(const std::string& name, const std::string& path) : mData({name, path})
-    {
-        constexpr auto vertexShaderSrc = R"(
-                #version 330 core
-                layout (location = 0) in vec4 aColor;
-                layout (location = 1) in vec3 aPos;
-                layout (location = 2) in vec2 aNormal;
-                layout (location = 3) in vec2 aTexCoords;
-                uniform mat4 uView;
-                uniform mat4 uProjection;
-                uniform mat4 uModel;
-                out vec4 Color;
-                out vec2 TexCoords;
-                void main()
-                {
-                    gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
-                    TexCoords = aTexCoords;
-                    Color = aColor;
-                }
-            )";
-
-        constexpr auto fragmentShaderSrc = R"(
-                #version 330 core
-                out vec4 FragColor;
-                uniform sampler2D uTexture;
-                in vec4 Color;
-                in vec2 TexCoords;
-                uniform vec3 uColor;
-                void main()
-                {
-                    vec4 texture = texture(uTexture, TexCoords);
-                    if (Color != vec4(0.0) && texture.rgb == vec3(0.0))
-                        FragColor = Color;
-                    else
-                        FragColor = pow(texture, vec4(1.0/2.2));
-                }
-            )";
-
-        constexpr auto spriteVertShaderSrc = R"(
-                #version 330 core
-                layout (location = 0) in vec3 aPos;
-                uniform mat4 uModel;
-                uniform mat4 uView;
-                uniform mat4 uProjection;
-                out vec2 TexCoords;
-                uniform float uAR;
-                uniform bool uKeepAspectRatio;
-                void main()
-                {
-                    vec2 scale = uKeepAspectRatio ? vec2(uAR > 1 ? 1 / uAR : 1, uAR < 1 ? uAR : 1) : vec2(1.0);
-                    TexCoords = aPos.xy;
-                    gl_Position = uProjection * uView * uModel * vec4(aPos.xy * scale, 0.0, 1.0);
-                }
-            )";
-
-        constexpr auto spriteFragShaderSrc = R"(
-                #version 330 core
-                out vec4 FragColor;
-                uniform sampler2D uTexture;
-                uniform bool uUseTextureAlpha;
-                uniform float uTextureAlpha;
-                in vec2 TexCoords;
-                void main()
-                {
-                    vec4 Texture = texture2D(uTexture, TexCoords);
-                    if (Texture.a < 0.35)
-                            discard;
-                    if (uTextureAlpha <= Texture.a)
-                            Texture.a = uTextureAlpha;
-                        FragColor = pow(vec4(Texture.rgba), vec4(1.0/2.2));
-                }
-            )";
-
-        mMainShader.LoadShaderSrc<gl::VERTEX_SHADER>(vertexShaderSrc);
-        mMainShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(fragmentShaderSrc);
-        mMainShader.CreateProgram();
-
-        mSprite2DShader.LoadShaderSrc<gl::VERTEX_SHADER>(spriteVertShaderSrc);
-        mSprite2DShader.LoadShaderSrc<gl::FRAGMENT_SHADER>(spriteFragShaderSrc);
-        mSprite2DShader.CreateProgram();
-    }
+    World::World(const std::string& name, const std::string& path) : mData({name, path}) {}
 
     World::~World() = default;
 
@@ -346,6 +367,12 @@ namespace oe::World
 
             auto mainCameraComponent = entity["MainCameraComponent"];
             auto modelComponent = entity["ModelComponent"];
+            auto spriteComponent = entity["Sprite2DComponent"];
+            auto pointComponent = entity["PointComponent"];
+            auto lineComponent = entity["LineComponent"];
+            auto circleComponent = entity["CircleComponent"];
+            auto quadComponent = entity["QuadComponent"];
+            auto particleSystemComponent = entity["ParticleSystemComponent"];
 
             Entity loadedEntity = world->CreateEntity(name);
 
@@ -372,6 +399,75 @@ namespace oe::World
                 mainCamera.PerspectiveNear = mainCameraComponent["PerspectiveNear"].as<float>();
                 mainCamera.PerspectiveFar = mainCameraComponent["PerspectiveFar"].as<float>();
                 mainCamera.Fov = mainCameraComponent["Fov"].as<float>();
+            }
+
+            if (pointComponent)
+            {
+                auto& point = loadedEntity.AddComponent<PointComponent>();
+                point.Color = pointComponent["Color"].as<glm::vec4>();
+                point.Size = pointComponent["Size"].as<float>();
+            }
+
+            if (lineComponent)
+            {
+                auto& line = loadedEntity.AddComponent<LineComponent>();
+                line.Color = lineComponent["Color"].as<glm::vec4>();
+                line.FromPosition = lineComponent["FromPosition"].as<glm::vec3>();
+                line.ToPosition = lineComponent["ToPosition"].as<glm::vec3>();
+            }
+
+            if (circleComponent)
+            {
+                auto& circle = loadedEntity.AddComponent<CircleComponent>();
+                circle.Color = circleComponent["Color"].as<glm::vec4>();
+                circle.Thickness = circleComponent["Thickness"].as<float>();
+                circle.Fade = circleComponent["Fade"].as<float>();
+            }
+
+            if (quadComponent)
+            {
+                auto& quad = loadedEntity.AddComponent<QuadComponent>();
+                quad.Color = quadComponent["Color"].as<glm::vec4>();
+            }
+
+            if (particleSystemComponent)
+            {
+                auto& particleSystem = loadedEntity.AddComponent<ParticleSystemComponent>();
+                if (particleSystemComponent["ParticlesProps"].IsDefined())
+                {
+                    int i{};
+                    while (true)
+                    {
+                        const auto& nd = particleSystemComponent["ParticlesProps"][std::to_string(i)];
+                        if (nd.IsDefined())
+                        {
+                            auto props = particleSystem.CreateParticleProps(nd["Name"].as<std::string>(), nd["Count"].as<uint32_t>());
+                            props->ColorBegin = nd["ColorBegin"].as<glm::vec4>();
+                            props->ColorEnd = nd["ColorEnd"].as<glm::vec4>();
+                            props->Position = nd["Position"].as<glm::vec2>();
+                            props->Rotation = nd["Rotation"].as<glm::vec3>();
+                            props->Velocity = nd["Velocity"].as<glm::vec2>();
+                            props->VelocityVariation = nd["VelocityVariation"].as<glm::vec2>();
+                            props->RotationAngleBegin = nd["RotationAngleBegin"].as<float>();
+                            props->RotationAngleEnd = nd["RotationAngleEnd"].as<float>();
+                            props->SizeBegin = nd["SizeBegin"].as<float>();
+                            props->SizeEnd = nd["SizeEnd"].as<float>();
+                            props->SizeVariation = nd["SizeVariation"].as<float>();
+                            props->LifeTime = nd["LifeTime"].as<float>();
+                        }
+                        else
+                            break;
+                        i++;
+                    }
+                }
+            }
+
+            if (spriteComponent)
+            {
+                auto& sprite = loadedEntity.AddComponent<Sprite2DComponent>().Sprite2D;
+                sprite->Load(spriteComponent["Path"].as<std::string>(), spriteComponent["KeepAR"].as<bool>());
+                sprite->SetAlpha(spriteComponent["Alpha"].as<float>());
+                sprite->SetUsingTextureAlpha(spriteComponent["IsUsingTextureAlpha"].as<bool>());
             }
 
             if (modelComponent)
@@ -470,39 +566,50 @@ namespace oe::World
                 break;
         }
 
+        Renderer::Begin(*mainCamera);
         for (auto entity : view)
         {
             // const auto& tagComponent = view.get<const TagComponent>(entity);
             const auto& transformComponent = view.get<const TransformComponent>(entity);
             const auto& modelComponent = mRegistry.try_get<const ModelComponent>(entity);
             const auto& spriteComponent = mRegistry.try_get<const Sprite2DComponent>(entity);
+            const auto& pointComponent = mRegistry.try_get<const PointComponent>(entity);
+            const auto& lineComponent = mRegistry.try_get<const LineComponent>(entity);
+            const auto& circleComponent = mRegistry.try_get<const CircleComponent>(entity);
+            const auto& quadComponent = mRegistry.try_get<const QuadComponent>(entity);
+            auto particleSystemComponent = mRegistry.try_get<ParticleSystemComponent>(entity);
 
-            //            if (modelComponent)
-            //            {
-            //                mMainShader.Use();
-            //                mMainShader.SetUniform("uModel", transformComponent.GetTransform());
-            //                mMainShader.SetUniform("uView", mainCamera->GetViewMatrix());
-            //                mMainShader.SetUniform("uProjection", mainCamera->GetPerspectiveProjection());
-            //                modelComponent->Model->Draw();
-            //            }
+            if (modelComponent)
+                Renderer::RenderModel(transformComponent.GetTransform(), *modelComponent->Model);
 
             if (spriteComponent)
-            {
-                const auto sprite = spriteComponent->Sprite2D;
-                mSprite2DShader.Use();
-                mSprite2DShader.SetUniform("uModel", transformComponent.GetTransform());
-                mSprite2DShader.SetUniform("uView", glm::mat4(1.0f));
-                mSprite2DShader.SetUniform("uProjection", mainCamera->GetOrthoProjection());
-                if (sprite->IsKeepAR())
-                    mSprite2DShader.SetUniform(
-                        "uAR", Core::Root::GetWindow()->GetAr() /
-                                   (static_cast<float>(sprite->GetTexture()->GetData()->Width) / sprite->GetTexture()->GetData()->Height));
+                Renderer::RenderSprite2D(transformComponent.GetTransform(), *spriteComponent->Sprite2D);
 
-                mSprite2DShader.SetUniform("uTextureAlpha", sprite->GetAlpha());
-                mSprite2DShader.SetUniform("uUseTextureAlpha", sprite->IsUseTextureAlpha());
-                mSprite2DShader.SetUniform("uKeepAspectRatio", sprite->IsKeepAR());
-                sprite->Draw();
+            if (pointComponent)
+                Renderer::RenderPoint(transformComponent.GetTransform(), pointComponent->Color, pointComponent->Size);
+
+            if (lineComponent)
+                Renderer::RenderLine(transformComponent.GetTransform(), lineComponent->FromPosition, lineComponent->ToPosition,
+                                     lineComponent->Color);
+
+            if (circleComponent)
+                Renderer::RenderCircle(transformComponent.GetTransform(), circleComponent->Color, circleComponent->Thickness,
+                                       circleComponent->Fade);
+
+            if (quadComponent)
+                Renderer::RenderQuad(transformComponent.GetTransform(), quadComponent->Color);
+
+            if (particleSystemComponent)
+            {
+                const auto& particleProps = particleSystemComponent->ParticlesProps;
+                for (const auto& particle : particleProps)
+                    for (uint32_t i{}; i < particle.second.second; ++i)
+                        particleSystemComponent->ParticleSystem.Emit(*particle.second.first);
+
+                particleSystemComponent->ParticleSystem.Update(Runtime::Engine::GetDeltaTime());
+                particleSystemComponent->ParticleSystem.Render();
             }
         }
+        Renderer::End();
     }
 } // namespace oe::World

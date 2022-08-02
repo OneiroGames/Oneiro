@@ -22,7 +22,7 @@ namespace oe::Renderer::GL
         Sprite2D(const Sprite2D&) = delete;
 
         void Load(const std::string& path, bool keepAspectRatio = true);
-        void Draw();
+        void Draw() const;
         void SetAlpha(float alpha);
         void SetUsingTextureAlpha(bool useTextureAlpha);
 

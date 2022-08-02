@@ -27,6 +27,11 @@ namespace oe
         return translate(glm::mat4(1.0f), Translation) * rotation * scale(glm::mat4(1.0f), Scale);
     }
 
+    PointComponent::PointComponent() = default;
+    LineComponent::LineComponent() = default;
+    CircleComponent::CircleComponent() = default;
+    QuadComponent::QuadComponent() = default;
+
     Sprite2DComponent::Sprite2DComponent() : Sprite2D(new Renderer::GL::Sprite2D) {}
 
     Sprite2DComponent::Sprite2DComponent(const Sprite2DComponent&) = default;
@@ -44,6 +49,22 @@ namespace oe
     ModelComponent::ModelComponent(const ModelComponent&) = default;
 
     ModelComponent::ModelComponent(Renderer::GL::Model* model) : Model(model) {}
+
+    Renderer::ParticleProps* ParticleSystemComponent::CreateParticleProps(const std::string& name, uint32_t count)
+    {
+        return (ParticlesProps[name] = std::make_pair(std::make_shared<Renderer::ParticleProps>(), count)).first.get();
+    }
+
+    Renderer::ParticleProps* ParticleSystemComponent::GetParticleProps(const std::string& name)
+    {
+        return ParticlesProps[name].first.get();
+    }
+
+    void ParticleSystemComponent::DestroyParticleProps(const std::string& name)
+    {
+        if (ParticlesProps.find(name) != ParticlesProps.end())
+            ParticlesProps.erase(name);
+    }
 
     MainCameraComponent::MainCameraComponent() : Front(glm::vec3(0.0f, 0.0f, -1.0f)), Up(glm::vec3(0.0f, 1.0f, 0.0f)), WorldUp(Up)
     {
@@ -127,7 +148,6 @@ namespace oe
     {
         return glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, OrthoNear, OrthoFar);
     }
-
     void MainCameraComponent::UpdateCameraVectors()
     {
         Front = normalize(glm::vec3{cos(glm::radians(Yaw)) * cos(glm::radians(Pitch)), sin(glm::radians(Pitch)),

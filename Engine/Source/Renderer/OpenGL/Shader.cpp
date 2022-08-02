@@ -4,6 +4,7 @@
 //
 
 #include "Oneiro/Renderer/OpenGL/Shader.hpp"
+#include "Oneiro/Core/Logger.hpp"
 #include <cstring>
 
 namespace oe::Renderer::GL
@@ -33,22 +34,6 @@ namespace oe::Renderer::GL
     void Shader::ClearUniformLocationCache()
     {
         mUniformLocationCache.clear();
-    }
-
-    std::string Shader::LoadShaderFile(const char* path)
-    {
-        std::ifstream file;
-        std::stringstream stringstream;
-
-        file.open(path);
-        if (!file.is_open())
-        {
-            std::cerr << "Shader::LoadShaderFile from " << path << '\n';
-            return {};
-        }
-        stringstream << file.rdbuf();
-        file.close();
-        return stringstream.str();
     }
 
     uint32_t Shader::Get()
@@ -86,6 +71,39 @@ namespace oe::Renderer::GL
                 std::cerr << infoLog << '\n';
             }
         }
+        return true;
+    }
+    bool Shader::LoadShaderFile(const char* path)
+    {
+        std::ifstream file{path};
+        if (!file.is_open())
+        {
+            log::get("log")->warn("Failed to load shader '" + std::string(path) + "'!");
+            return false;
+        }
+
+        std::stringstream ss[2];
+        std::string line{};
+
+        ShaderType type;
+        while (std::getline(file, line))
+        {
+            if (line.find("// TYPE=") != std::string::npos)
+            {
+                if (line.find("VERTEX") != std::string::npos)
+                    type = VERTEX;
+                else if (line.find("FRAGMENT") != std::string::npos)
+                    type = FRAGMENT;
+            }
+            else
+                ss[(int)type] << line << '\n';
+        }
+
+        file.close();
+
+        LoadShaderSrc<gl::VERTEX_SHADER>(ss[(int)VERTEX].str());
+        LoadShaderSrc<gl::FRAGMENT_SHADER>(ss[(int)FRAGMENT].str());
+
         return true;
     }
 } // namespace oe::Renderer::GL

@@ -41,6 +41,11 @@ namespace oe::Renderer::GL
             return mVertices;
         }
 
+        [[nodiscard]] constexpr std::vector<uint32_t>& GetIndices()
+        {
+            return mIndices;
+        }
+
       private:
         void ProcessAiNode(const aiNode* node, const aiScene* scene);
 

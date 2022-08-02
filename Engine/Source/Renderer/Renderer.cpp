@@ -8,8 +8,60 @@
 #ifndef OE_RENDERER_VULKAN
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include "stb/stb_image.h"
+
+#include <array>
+
+namespace
+{
+    oe::Renderer::Statistic stats{};
+    constexpr oe::Renderer::Limits limits{};
+
+    oe::Renderer::GL::Shader sprite2DShader{};
+    oe::Renderer::GL::Shader mainShader{};
+    oe::Renderer::GL::Shader pointShader{};
+    oe::Renderer::GL::Shader circleShader{};
+    oe::Renderer::GL::Shader lineShader{};
+    oe::Renderer::GL::Shader quadShader{};
+
+    oe::Renderer::GL::VertexArray lineVAO{};
+    oe::Renderer::GL::Buffer<gl::ARRAY_BUFFER, gl::DYNAMIC_DRAW> lineVBO{};
+
+    oe::Renderer::GL::VertexArray circleVAO{};
+    oe::Renderer::GL::Buffer<gl::ARRAY_BUFFER, gl::DYNAMIC_DRAW> circleVBO{};
+
+    oe::Renderer::GL::VertexArray pointVAO{};
+    oe::Renderer::GL::Buffer<gl::ARRAY_BUFFER, gl::DYNAMIC_DRAW> pointVBO{};
+
+    oe::Renderer::GL::VertexArray quadVAO{};
+    oe::Renderer::GL::Buffer<gl::ARRAY_BUFFER, gl::DYNAMIC_DRAW> quadVBO{};
+    oe::Renderer::GL::Buffer<gl::ELEMENT_ARRAY_BUFFER, gl::STATIC_DRAW> quadEBO{};
+
+    constexpr glm::vec4 quadVertices[4] = {
+        {-1.0f, -1.0f, 0.0f, 1.0f}, {1.0f, -1.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f}, {-1.0f, 1.0f, 0.0f, 1.0f}};
+
+    uint32_t pointVertexCount{};
+    oe::Renderer::PointVertex* pointVertexBase{};
+    oe::Renderer::PointVertex* pointVertexPtr{};
+
+    uint32_t lineVertexCount{};
+    oe::Renderer::LineVertex* lineVertexBase{};
+    oe::Renderer::LineVertex* lineVertexPtr{};
+
+    uint32_t circleIndicesCount{};
+    oe::Renderer::CircleVertex* circleVertexBase{};
+    oe::Renderer::CircleVertex* circleVertexPtr{};
+
+    uint32_t quadIndicesCount{};
+    oe::Renderer::QuadVertex* quadVertexBase{};
+    oe::Renderer::QuadVertex* quadVertexPtr{};
+
+    uint32_t textureSlotIndex{1};
+    std::array<const oe::Renderer::GL::Texture<gl::TEXTURE_2D>*, limits.MaxTextures> textureSlots{};
+
+    void SetupBuffers();
+    std::array<uint32_t, limits.MaxIndices> CreateQuadIndices();
+}; // namespace
 
 namespace oe::Renderer
 {
@@ -23,9 +75,314 @@ namespace oe::Renderer
         gl::Enable(gl::BLEND);
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         gl::Enable(gl::DEPTH_TEST);
+        gl::Enable(gl::LINE_SMOOTH);
+        gl::Enable(gl::PROGRAM_POINT_SIZE);
+
+        mainShader.LoadShaderFile("Shaders/OpenGL/main.glsl");
+        mainShader.CreateProgram();
+
+        lineShader.LoadShaderFile("Shaders/OpenGL/line.glsl");
+        lineShader.CreateProgram();
+
+        circleShader.LoadShaderFile("Shaders/OpenGL/circle.glsl");
+        circleShader.CreateProgram();
+
+        pointShader.LoadShaderFile("Shaders/OpenGL/point.glsl");
+        pointShader.CreateProgram();
+
+        quadShader.LoadShaderFile("Shaders/OpenGL/quad.glsl");
+        quadShader.CreateProgram();
+
+        SetupBuffers();
+
+        pointVertexBase = new PointVertex[limits.MaxVertices];
+        lineVertexBase = new LineVertex[limits.MaxVertices];
+        circleVertexBase = new CircleVertex[limits.MaxVertices];
+        quadVertexBase = new QuadVertex[limits.MaxVertices];
+
+        quadShader.Use();
+        for (int i = 0; i < limits.MaxTextures; ++i)
+            quadShader.SetUniform(("uTextures[" + std::to_string(i) + "]").c_str(), i);
+    }
+
+    void Begin(const MainCameraComponent& mainCamera)
+    {
+        const auto& window = Core::Root::GetWindow();
+
+        sprite2DShader.Use();
+        sprite2DShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
+
+        quadShader.Use();
+        quadShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
+
+        pointShader.Use();
+        pointShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
+
+        circleShader.Use();
+        circleShader.SetUniform("uProjection", mainCamera.GetOrthoProjection());
+        circleShader.SetUniform("uResolution", glm::vec2(window->GetWidth(), window->GetHeight()));
+
+        mainShader.Use();
+        mainShader.SetUniform("uView", mainCamera.GetViewMatrix());
+        mainShader.SetUniform("uProjection", mainCamera.GetPerspectiveProjection());
+
+        StartBatch();
+    }
+
+    void RenderSprite2D(const glm::mat4& transform, const GL::Sprite2D& sprite2D)
+    {
+        if (sprite2D.IsKeepAR())
+        {
+            const auto& window = Core::Root::GetWindow();
+            const auto& texture = sprite2D.GetTexture();
+            RenderQuad(transform, *texture, sprite2D.GetAlpha(), sprite2D.IsKeepAR(),
+                       window->GetAr() / (static_cast<float>(texture->GetData()->Width) / static_cast<float>(texture->GetData()->Height)));
+            return;
+        }
+        else
+            RenderQuad(transform, *sprite2D.GetTexture(), sprite2D.GetAlpha());
+    }
+
+    void RenderModel(const glm::mat4& transform, const GL::Model& model)
+    {
+        mainShader.Use();
+        mainShader.SetUniform("uTransform", transform);
+        model.Draw();
+
+        stats.Indices += model.GetIndices().size();
+        stats.Vertices += model.GetVertices().size();
+        stats.DrawCalls++;
+    }
+
+    void RenderLine(const glm::mat4& transform, const glm::vec3& fromPos, const glm::vec3& toPos,
+                    const glm::vec4& color /*= glm::vec4(1.0f)*/)
+    {
+        if (lineVertexCount >= limits.MaxVertices)
+            StartBatch();
+
+        lineVertexPtr->Color = color;
+        lineVertexPtr->Position = transform * glm::vec4(fromPos.x, fromPos.y, fromPos.z, 1.0f);
+        lineVertexPtr++;
+
+        lineVertexPtr->Color = color;
+        lineVertexPtr->Position = transform * glm::vec4(toPos.x, toPos.y, toPos.z, 1.0f);
+        lineVertexPtr++;
+
+        lineVertexCount += 2;
+
+        stats.Vertices += 2;
+    }
+
+    void RenderCircle(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/, float thickness /*= 1.0f*/,
+                      float fade /*= 0.005f*/)
+    {
+        if (circleIndicesCount >= limits.MaxIndices)
+            NextBatch();
+
+        for (auto& vertex : quadVertices)
+        {
+            circleVertexPtr->Color = color;
+            circleVertexPtr->WorldPosition = transform * vertex;
+            circleVertexPtr->LocalPosition = vertex;
+            circleVertexPtr->Thickness = thickness;
+            circleVertexPtr->Fade = fade;
+            circleVertexPtr++;
+        }
+        circleIndicesCount += 6;
+        stats.Indices += 6;
+    }
+
+    void RenderPoint(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/, float size /*= 1.0f*/)
+    {
+        if (pointVertexCount >= limits.MaxVertices)
+            NextBatch();
+
+        pointVertexPtr->Color = color;
+        pointVertexPtr->Position = transform * glm::vec4(1.0f);
+        pointVertexPtr->Size = size;
+        pointVertexPtr++;
+        pointVertexCount++;
+        stats.Vertices++;
+    }
+
+    void RenderQuad(const glm::mat4& transform, const GL::Texture<gl::TEXTURE_2D>& texture, float alpha /*= 1.0f*/, bool keepAr /*= false*/,
+                    float ar /*= 0.0f*/)
+    {
+        if (quadIndicesCount >= limits.MaxIndices)
+            NextBatch();
+
+        uint32_t textureIndex{};
+        const auto textureSlotsCount = textureSlots.size();
+
+        for (uint32_t i{}; i < textureSlotsCount; ++i)
+        {
+            if (textureSlots[i] == &texture)
+            {
+                textureIndex = i;
+                break;
+            }
+        }
+
+        if (!textureIndex)
+        {
+            if (textureSlotIndex >= limits.MaxTextures)
+                NextBatch();
+
+            textureIndex = textureSlotIndex;
+            textureSlots[textureIndex] = &texture;
+            textureSlotIndex++;
+        }
+
+        for (const auto& vertex : quadVertices)
+        {
+            quadVertexPtr->Position = transform * vertex;
+            quadVertexPtr->TexIndex = textureIndex;
+            quadVertexPtr->TexCoords = glm::vec2(vertex.x, vertex.y);
+            quadVertexPtr->Alpha = alpha;
+            quadVertexPtr->KeepAr = keepAr;
+            quadVertexPtr->Ar = ar;
+            quadVertexPtr++;
+        }
+        quadIndicesCount += 6;
+        stats.Indices += 6;
+        stats.Textures++;
+    }
+
+    void RenderQuad(const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
+    {
+        if (quadIndicesCount >= limits.MaxIndices)
+            NextBatch();
+
+        for (const auto& vertex : quadVertices)
+        {
+            quadVertexPtr->Position = transform * vertex;
+            quadVertexPtr->Color = color;
+            quadVertexPtr++;
+        }
+        quadIndicesCount += 6;
+        stats.Indices += 6;
+    }
+
+    void Flush()
+    {
+        gl::Disable(gl::DEPTH_TEST);
+        if (lineVertexCount)
+        {
+            auto dataSize = (uint32_t)((uint8_t*)lineVertexPtr - (uint8_t*)lineVertexBase);
+            lineShader.Use();
+            lineVAO.Bind();
+            lineVBO.Bind();
+            lineVBO.BufferSubData(dataSize, 0, lineVertexBase);
+            GL::DrawArrays(GL::LINES, lineVertexCount);
+
+            stats.DrawCalls++;
+        }
+
+        if (pointVertexCount)
+        {
+            auto dataSize = (uint32_t)((uint8_t*)pointVertexPtr - (uint8_t*)pointVertexBase);
+            pointShader.Use();
+            pointVAO.Bind();
+            pointVBO.Bind();
+            pointVBO.BufferSubData(dataSize, 0, pointVertexBase);
+            GL::DrawArrays(GL::POINTS, pointVertexCount);
+
+            stats.DrawCalls++;
+        }
+
+        if (circleIndicesCount)
+        {
+            auto dataSize = (uint32_t)((uint8_t*)circleVertexPtr - (uint8_t*)circleVertexBase);
+            circleShader.Use();
+            circleVAO.Bind();
+            circleVBO.Bind();
+            circleVBO.BufferSubData(dataSize, 0, circleVertexBase);
+            quadEBO.Bind();
+            GL::DrawElements(GL::TRIANGLES, circleIndicesCount, GL::UNSIGNED_INT);
+
+            stats.DrawCalls++;
+        }
+
+        if (quadIndicesCount)
+        {
+            auto dataSize = (uint32_t)((uint8_t*)quadVertexPtr - (uint8_t*)quadVertexBase);
+            quadShader.Use();
+            quadVAO.Bind();
+            quadVBO.Bind();
+            quadVBO.BufferSubData(dataSize, 0, quadVertexBase);
+            quadEBO.Bind();
+            const auto textureSlotsCount = textureSlots.size();
+            for (uint32_t i{}; i < textureSlotsCount; ++i)
+                if (textureSlots[i])
+                    textureSlots[i]->Bind(i);
+            GL::DrawElements(GL::TRIANGLES, quadIndicesCount, GL::UNSIGNED_INT);
+
+            stats.DrawCalls++;
+        }
+
+        gl::Enable(gl::DEPTH_TEST);
+
+        stats.FlushesCount++;
+    }
+
+    void StartBatch()
+    {
+        lineVertexCount = 0;
+        lineVertexPtr = lineVertexBase;
+
+        pointVertexCount = 0;
+        pointVertexPtr = pointVertexBase;
+
+        circleIndicesCount = 0;
+        circleVertexPtr = circleVertexBase;
+
+        quadIndicesCount = 0;
+        quadVertexPtr = quadVertexBase;
+
+        textureSlotIndex = 1;
+    }
+
+    void NextBatch()
+    {
+        Flush();
+        StartBatch();
+    }
+
+    void End()
+    {
+        Flush();
     }
 
     void Shutdown() {}
+
+    void SetLineWidth(float width)
+    {
+        gl::LineWidth(width);
+    }
+
+    void SetPointSize(float size)
+    {
+        gl::PointSize(size);
+    }
+
+    const Statistic& GetStats()
+    {
+        return stats;
+    }
+
+    void ResetStats()
+    {
+        stats.FlushesCount = 0;
+        stats.Vertices = 0;
+        stats.Indices = 0;
+        stats.Textures = 0;
+        stats.DrawCalls = 0;
+    }
+
+    const Limits& GetLimits()
+    {
+        return limits;
+    }
 
     void GL::DrawArrays(DrawMode mode, int first, int count)
     {
@@ -62,8 +419,87 @@ namespace oe::Renderer
         Viewport(0, 0, width, height);
     }
 } // namespace oe::Renderer
-#else
 
+namespace
+{
+    void SetupBuffers()
+    {
+        using namespace oe::Renderer;
+        // Begin Line
+        lineVAO.Generate();
+        lineVBO.Generate();
+        lineVAO.Bind();
+        lineVBO.Bind();
+        lineVBO.BufferData<LineVertex>(limits.MaxVertices, nullptr);
+        GL::VertexAttribPointer(0, 4, 8);
+        GL::VertexAttribPointer(1, 4, 8, 4);
+        // End Line
+
+        // Begin Circle
+        circleVAO.Generate();
+        circleVBO.Generate();
+        circleVAO.Bind();
+        circleVBO.Bind();
+        circleVBO.BufferData<CircleVertex>(limits.MaxVertices, nullptr);
+        GL::VertexAttribPointer(0, 4, 14);
+        GL::VertexAttribPointer(1, 4, 14, 4);
+        GL::VertexAttribPointer(2, 4, 14, 8);
+        GL::VertexAttribPointer(3, 1, 14, 12);
+        GL::VertexAttribPointer(4, 1, 14, 13);
+        // End Circle
+
+        // Begin Point
+        pointVAO.Generate();
+        pointVBO.Generate();
+        pointVAO.Bind();
+        pointVBO.Bind();
+        pointVBO.BufferData<PointVertex>(limits.MaxVertices, nullptr);
+        GL::VertexAttribPointer(0, 4, 9);
+        GL::VertexAttribPointer(1, 4, 9, 4);
+        GL::VertexAttribPointer(2, 1, 9, 8);
+        // End Point
+
+        // Begin Quad
+        quadVAO.Generate();
+        quadVBO.Generate();
+        quadEBO.Generate();
+        quadVAO.Bind();
+        quadVBO.Bind();
+        quadVBO.BufferData<QuadVertex>(limits.MaxVertices, nullptr);
+        quadEBO.Bind();
+        quadEBO.BufferData(limits.MaxIndices, CreateQuadIndices().data());
+        GL::VertexAttribPointer(0, 4, 14);
+        GL::VertexAttribPointer(1, 4, 14, 4);
+        GL::VertexAttribPointer(2, 2, 14, 8);
+        GL::VertexAttribPointer(3, 1, 14, 10);
+        GL::VertexAttribPointer(4, 1, 14, 11);
+        GL::VertexAttribPointer(5, 1, 14, 12);
+        GL::VertexAttribPointer(6, 1, 14, 13);
+        // End Quad
+    }
+
+    std::array<uint32_t, limits.MaxIndices> CreateQuadIndices()
+    {
+        std::array<uint32_t, limits.MaxIndices> indices{};
+
+        uint32_t offset{};
+        for (uint32_t i{}; i < limits.MaxIndices; i += 6)
+        {
+            indices[i + 0] = offset + 0;
+            indices[i + 1] = offset + 1;
+            indices[i + 2] = offset + 2;
+            indices[i + 3] = offset + 2;
+            indices[i + 4] = offset + 3;
+            indices[i + 5] = offset + 0;
+
+            offset += 4;
+        }
+
+        return indices;
+    }
+} // namespace
+
+#else
 #include "Oneiro/Core/Root.hpp"
 #include "Oneiro/Core/Window.hpp"
 

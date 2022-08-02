@@ -4,6 +4,7 @@
 //
 
 #include "Oneiro/Renderer/OpenGL/Model.hpp"
+#include "Oneiro/Renderer/Renderer.hpp"
 
 namespace oe::Renderer::GL
 {
@@ -54,5 +55,10 @@ namespace oe::Renderer::GL
     std::string Model::GetPath()
     {
         return mPath;
+    }
+
+    bool Model::IsNeed2SaveVertices() const
+    {
+        return mIsNeed2SaveVertices;
     }
 } // namespace oe::Renderer::GL

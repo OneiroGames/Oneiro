@@ -14,6 +14,7 @@ namespace oe::Core
       public:
         static int DiceInt(int min, int max);
         static float DiceFloat(float min, float max);
+        static float DiceFloat();
         static double DiceDouble(double min, double max);
 
         static std::string DiceUuid();

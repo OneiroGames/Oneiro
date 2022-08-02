@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../Renderer.hpp"
+#include "Base.hpp"
 #include "Mesh.hpp"
 
 namespace oe::Renderer::GL
@@ -22,13 +22,15 @@ namespace oe::Renderer::GL
         void Draw() const;
 
         [[nodiscard]] std::string GetPath();
-        [[nodiscard]] bool IsNeed2SaveVertices() const
-        {
-            return mIsNeed2SaveVertices;
-        }
+        [[nodiscard]] bool IsNeed2SaveVertices() const;
         [[nodiscard]] constexpr std::vector<Vertex>& GetVertices() const
         {
             return mMesh->GetVertices();
+        }
+
+        [[nodiscard]] constexpr std::vector<uint32_t>& GetIndices() const
+        {
+            return mMesh->GetIndices();
         }
 
       private:

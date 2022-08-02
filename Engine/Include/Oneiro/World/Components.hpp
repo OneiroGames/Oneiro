@@ -6,6 +6,8 @@
 #pragma once
 
 #include "Oneiro/Animation/Animation.hpp"
+#include "Oneiro/Renderer/OpenGL/Model.hpp"
+#include "Oneiro/Renderer/ParticleSystem.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -44,6 +46,38 @@ namespace oe
         [[nodiscard]] glm::mat4 GetTransform() const;
     };
 
+    struct PointComponent
+    {
+        PointComponent();
+
+        glm::vec4 Color{1.0f};
+        float Size{1.0f};
+    };
+
+    struct LineComponent
+    {
+        LineComponent();
+
+        glm::vec4 Color{1.0f};
+        glm::vec3 FromPosition{};
+        glm::vec3 ToPosition{};
+    };
+
+    struct CircleComponent
+    {
+        CircleComponent();
+
+        glm::vec4 Color{1.0f};
+        float Thickness{1.0f};
+        float Fade{0.005f};
+    };
+
+    struct QuadComponent
+    {
+        QuadComponent();
+        glm::vec4 Color{1.0f};
+    };
+
     struct Sprite2DComponent
     {
         Sprite2DComponent();
@@ -72,6 +106,18 @@ namespace oe
         ModelComponent(Renderer::GL::Model* model);
 
         Renderer::GL::Model* Model;
+    };
+
+    struct ParticleSystemComponent
+    {
+        ParticleSystemComponent() = default;
+
+        Renderer::ParticleProps* CreateParticleProps(const std::string& name, uint32_t count);
+        Renderer::ParticleProps* GetParticleProps(const std::string& name);
+        void DestroyParticleProps(const std::string& name);
+
+        Renderer::ParticleSystem ParticleSystem{};
+        std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::ParticleProps>, uint32_t>> ParticlesProps;
     };
 
     struct MainCameraComponent
