@@ -43,13 +43,13 @@ namespace SandBox
 
         auto& mainCamera = playerEntity.GetComponent<MainCameraComponent>();
 
-        if (IsKey(Input::Action::PRESS, Input::Key::W))
+        if (IsKey(Input::PRESS, Input::W))
             mainCamera.UpdateForward(deltaTime);
-        if (IsKey(Input::Action::PRESS, Input::Key::S))
+        if (IsKey(Input::PRESS, Input::S))
             mainCamera.UpdateBackward(deltaTime);
-        if (IsKey(Input::Action::PRESS, Input::Key::D))
+        if (IsKey(Input::PRESS, Input::D))
             mainCamera.UpdateRight(deltaTime);
-        if (IsKey(Input::Action::PRESS, Input::Key::A))
+        if (IsKey(Input::PRESS, Input::A))
             mainCamera.UpdateLeft(deltaTime);
 
         mWorld->UpdateEntities();
