@@ -20,6 +20,11 @@ namespace oe::Runtime
     class Engine;
 } // namespace oe::Runtime
 
+namespace oe::World
+{
+    class World;
+}
+
 namespace oe::Core
 {
     class Root
@@ -27,6 +32,7 @@ namespace oe::Core
       public: // Getters
         static Window* GetWindow();
         static Runtime::Application* GetApplication();
+        static World::World* GetWorld();
 
       private:
         friend class Runtime::Engine;
@@ -34,5 +40,6 @@ namespace oe::Core
       private:
         static Window* mWindowInstance;
         static Runtime::Application* mApplicationInstance;
+        static std::shared_ptr<World::World> mWorldInstance;
     };
 } // namespace oe::Core

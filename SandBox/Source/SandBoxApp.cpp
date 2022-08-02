@@ -18,13 +18,10 @@ namespace SandBox
         gl::CullFace(gl::BACK);
         gl::FrontFace(gl::CCW);
 
+        mWorld = Core::Root::GetWorld();
         if (World::World::IsExists("main"))
-        {
-            mWorld = World::World::Load("main");
-            return mWorld.get();
-        }
+            return mWorld->Load("main");
 
-        mWorld = std::make_shared<World::World>("Main", "main");
         auto player = mWorld->CreateEntity("Player");
         player.AddComponent<MainCameraComponent>();
 
@@ -51,8 +48,6 @@ namespace SandBox
             mainCamera.UpdateRight(deltaTime);
         if (IsKey(Input::PRESS, Input::A))
             mainCamera.UpdateLeft(deltaTime);
-
-        mWorld->UpdateEntities();
 
         {
             using namespace Renderer;
@@ -97,7 +92,7 @@ namespace SandBox
 
     void Application::OnShutdown()
     {
-        mWorld->Save(true);
+        mWorld->Save("main", "main", true);
     }
 } // namespace SandBox
 

@@ -314,7 +314,7 @@ namespace
 
 namespace oe::World
 {
-    World::World(const std::string& name, const std::string& path) : mData({name, path}) {}
+    World::World() = default;
 
     World::~World() = default;
 
@@ -341,23 +341,21 @@ namespace oe::World
         return exists(std::filesystem::path(path + ".oeworld"));
     }
 
-    std::shared_ptr<World> World::Load(const std::string& path)
+    bool World::Load(const std::string& path)
     {
         // TODO: Add load new scene and clear old
 
         auto data = YAML::LoadFile(path + ".oeworld");
 
         if (!data["World"])
-            return {};
+            return false;
 
         const auto& worldName = data["World"].as<std::string>();
 
         if (worldName.empty())
-            return {};
+            return false;
 
         const auto& entities = data["Entities"];
-
-        auto world = std::make_shared<World>(worldName, path);
 
         for (auto entity : entities)
         {
@@ -374,7 +372,7 @@ namespace oe::World
             auto quadComponent = entity["QuadComponent"];
             auto particleSystemComponent = entity["ParticleSystemComponent"];
 
-            Entity loadedEntity = world->CreateEntity(name);
+            Entity loadedEntity = CreateEntity(name);
 
             auto& tc = loadedEntity.GetComponent<TransformComponent>();
 
@@ -496,11 +494,17 @@ namespace oe::World
             }
         }
 
-        return world;
+        mData.Name = worldName;
+        mData.Path = path;
+
+        return true;
     }
 
-    bool World::Save(bool reWrite)
+    bool World::Save(const std::string& name, const std::string& path, bool reWrite)
     {
+        mData.Name = name;
+        mData.Path = path;
+
         YAML::Emitter out;
         out << YAML::BeginMap;
 
@@ -552,7 +556,6 @@ namespace oe::World
     {
         return mRegistry;
     }
-
     void World::UpdateEntities()
     {
         auto view = mRegistry.view<const TagComponent, const TransformComponent>();
@@ -611,5 +614,9 @@ namespace oe::World
             }
         }
         Renderer::End();
+    }
+    bool World::Save(bool reWrite)
+    {
+        return Save(mData.Name, mData.Path, reWrite);
     }
 } // namespace oe::World

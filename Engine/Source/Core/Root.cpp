@@ -4,6 +4,7 @@
 //
 
 #include "Oneiro/Core/Root.hpp"
+#include "Oneiro/World/World.hpp"
 
 namespace oe::Core
 {
@@ -17,6 +18,12 @@ namespace oe::Core
         return mApplicationInstance;
     }
 
+    World::World* Root::GetWorld()
+    {
+        return mWorldInstance.get();
+    }
+
     Window* Root::mWindowInstance{};
     Runtime::Application* Root::mApplicationInstance{};
+    std::shared_ptr<World::World> Root::mWorldInstance{};
 } // namespace oe::Core

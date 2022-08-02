@@ -22,6 +22,6 @@ namespace SandBox
         void OnShutdown() override;
 
       private:
-        std::shared_ptr<oe::World::World> mWorld{};
+        oe::World::World* mWorld{};
     };
 } // namespace SandBox

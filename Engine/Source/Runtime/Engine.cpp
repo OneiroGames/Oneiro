@@ -17,6 +17,7 @@
 #include "Oneiro/Core/Window.hpp"
 #include "Oneiro/Renderer/Gui/GuiLayer.hpp"
 #include "Oneiro/Renderer/Renderer.hpp"
+#include "Oneiro/World/World.hpp"
 
 namespace oe::Runtime
 {
@@ -35,6 +36,7 @@ namespace oe::Runtime
         const auto window = app->GetWindow();
         Root::mApplicationInstance = app.get();
         Root::mWindowInstance = window;
+        Root::mWorldInstance = std::make_shared<World::World>();
 
         Event::Dispatcher::Subscribe<Event::ErrorEvent>([](const Event::Base& e) {
             const auto& errorEvent = dynamic_cast<const Event::ErrorEvent&>(e);
@@ -86,6 +88,9 @@ namespace oe::Runtime
         Renderer::GuiLayer::NewFrame();
         if (!app->OnUpdate(deltaTime))
             return false;
+
+        Core::Root::GetWorld()->UpdateEntities();
+
         Renderer::GuiLayer::Draw();
 #ifdef OE_RENDERER_VULKAN
         Renderer::Vulkan::EndScene();

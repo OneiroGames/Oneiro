@@ -22,10 +22,9 @@ namespace oe::World
         };
 
       public:
-        World() = delete;
+        World();
         World(const World&) = delete;
 
-        World(const std::string& name, const std::string& path);
         ~World();
 
         Entity CreateEntity(const std::string& name = {});
@@ -44,11 +43,12 @@ namespace oe::World
          * \param path Path to world file without file extension (example: "path/to/file")
          * \return Returns shared ptr to world. If world failed to load then return nullptr (check with .get() func)
          */
-        static std::shared_ptr<World> Load(const std::string& path);
+        bool Load(const std::string& path);
 
         /**
          * \param reWrite If you need to rewrite the output file, then you must pass true
          */
+        bool Save(const std::string& name, const std::string& path, bool reWrite);
         bool Save(bool reWrite);
 
         void UpdateEntities();
