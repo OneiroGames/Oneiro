@@ -25,11 +25,9 @@ void oe::Engine::Init(IApplication* application)
 	FileSystem::Init();
 	FileSystem::Mount(".", "/");
 
-	m_ConfigFile = CreateRef<FileSystem::ConfigFile>("/Configs/Engine.ini");
+	m_EngineApi->cVars->Load("/Configs/Engine.ini");
 
-	const std::string wmLibrary = {m_ConfigFile->ReadValue<const char*>("modules", "WM", "Oneiro-Module-WM-SDL.dll")};
-
-	m_WMModule = m_EngineApi->moduleManager->LoadModule(wmLibrary);
+	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM"));
 
 	const auto& props = application->GetProperties().windowProperties;
 	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(props);
@@ -71,6 +69,8 @@ void oe::Engine::Shutdown()
 	JobSystem::Wait();
 
 	m_EngineApi->application->OnShutdown();
+
+	m_EngineApi->cVars->Save();
 
 	m_EngineApi->windowManager->GetPlatformWindow(0)->Destroy();
 

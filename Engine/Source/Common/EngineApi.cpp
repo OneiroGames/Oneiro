@@ -14,5 +14,6 @@ namespace oe
 		instance = this;
 		profiler = &::tracy::GetProfiler();
 		moduleManager = CreateRef<ModuleManager>();
+		cVars = CreateRef<CVars>();
 	}
 } // namespace oe

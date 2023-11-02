@@ -9,6 +9,7 @@
 #include "Oneiro/Common/IRenderer.hpp"
 #include "Oneiro/Common/WM/IWindowManager.hpp"
 
+#include "CVars.hpp"
 #include "tracy/Tracy.hpp"
 
 namespace oe
@@ -45,12 +46,18 @@ namespace oe
 			return instance->moduleManager.get();
 		}
 
+		static CVars* GetCVars()
+		{
+			return instance->cVars.get();
+		}
+
 		IApplication* application{};
 		IWindowManager* windowManager{};
 		IRenderer* rendererBackend{};
 		tracy::Profiler* profiler{};
 
 		Ref<ModuleManager> moduleManager{};
+		Ref<CVars> cVars{};
 
 		inline static EngineApi* instance{};
 	};

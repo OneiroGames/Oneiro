@@ -28,6 +28,13 @@ namespace oe::FileSystem
 			Save();
 		}
 
+		bool LoadFromData(const std::string& data)
+		{
+			m_File.SetUnicode();
+			return m_File.LoadData(data.c_str(), data.size());
+			;
+		}
+
 		bool Open(const Path& path)
 		{
 			m_Path = path;
@@ -80,6 +87,100 @@ namespace oe::FileSystem
 			for (const auto& name : names)
 				result.emplace_back(name.pItem);
 			return result;
+		}
+
+		template <class T>
+		void GetAllValuesFromSection(const std::string& section, std::vector<std::pair<std::string, T>>& vec)
+		{
+			CSimpleIniA::TNamesDepend keys{};
+			m_File.GetAllKeys(section.c_str(), keys);
+			for (const auto& key : keys)
+			{
+				const auto& value = m_File.GetValue(section.c_str(), key.pItem, nullptr);
+				if (value != nullptr)
+				{
+					if constexpr (std::is_same_v<T, const char*>)
+					{
+						const std::string str = value;
+						if (!str.empty())
+						{
+							vec.push_back({key.pItem, value});
+						}
+					}
+					else if constexpr (std::is_arithmetic_v<T>)
+					{
+						char szValue[64] = {0};
+						SI_ConvertA<char> conv(m_File.IsUnicode());
+						if (conv.ConvertToStore(value, szValue, sizeof(szValue)))
+						{
+							char* suffix = nullptr;
+							double nValue = strtod(szValue, &suffix);
+							if (!suffix || *suffix)
+							{
+								continue;
+							}
+							vec.push_back({key.pItem, nValue});
+						}
+					}
+					else if (std::is_same_v<T, bool>)
+					{
+						switch (value[0])
+						{
+							case 't':
+							case 'T': // true
+							case 'y':
+							case 'Y': // yes
+							case '1': // 1 (one)
+								vec.push_back({key.pItem, true});
+
+							case 'f':
+							case 'F': // false
+							case 'n':
+							case 'N': // no
+							case '0': // 0 (zero)
+								vec.push_back({key.pItem, false});
+
+							case 'o':
+							case 'O':
+								if (value[1] == 'n' || value[1] == 'N')
+									vec.push_back({key.pItem, true});
+								if (value[1] == 'f' || value[1] == 'F')
+									vec.push_back({key.pItem, false});
+								break;
+						}
+					}
+				}
+			}
+		}
+
+		template <class T>
+		std::vector<std::pair<std::string, T>> GetAllValues()
+		{
+			std::vector<std::pair<std::string, T>> result{};
+			CSimpleIniA::TNamesDepend sections{};
+			m_File.GetAllSections(sections);
+			for (const auto& section : sections)
+				GetAllValuesFromSection<T>(section.pItem, result);
+			return result;
+		}
+
+		std::string FindSectionByKey(const std::string& key)
+		{
+			CSimpleIniA::TNamesDepend sections{};
+			m_File.GetAllSections(sections);
+			for (const auto& section : sections)
+			{
+				CSimpleIniA::TNamesDepend keys{};
+				m_File.GetAllKeys(section.pItem, keys);
+				for (const auto& item : keys)
+				{
+					if (item.pItem == key)
+					{
+						return section.pItem;
+					}
+				}
+			}
+			return {};
 		}
 
 		template <class T>
