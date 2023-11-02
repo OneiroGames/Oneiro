@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <string>
 
+#define NOMINMAX
+
 #include "Oneiro/Common/Config.hpp"
 #include "Oneiro/Common/Loggger.hpp"
 #include "Oneiro/Common/Utils.hpp"

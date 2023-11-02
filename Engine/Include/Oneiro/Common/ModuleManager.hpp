@@ -33,7 +33,7 @@ namespace oe
 				{
 					if (shutdown)
 						module->Shutdown();
-					reinterpret_cast<DestroyModuleFunc>(mod.first->GetFunction("CreateModule"))(module);
+					reinterpret_cast<DestroyModuleFunc>(mod.first->GetFunction("DestroyModule"))(module);
 					m_Modules.erase(m_Modules.begin() + i);
 				}
 			}

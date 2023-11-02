@@ -9,6 +9,7 @@ if (POLICY CMP0141)
 endif ()
 
 if (MSVC)
+    # nothing special for MSVC at the moment
 else ()
     add_compile_options("-Wall" "-Wextra" "-Werror" "$<$<CONFIG:RELEASE>:-O3>")
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -26,7 +27,6 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(flecs CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
-find_path(NANO_SIGNAL_SLOT_INCLUDE_DIRS "nano_function.hpp")
 find_package(physfs CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(imguizmo CONFIG REQUIRED)
@@ -37,7 +37,7 @@ set(CMAKE_UNITY_BUILD ON)
 set(CMAKE_UNITY_BUILD_BATCH_SIZE 3)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-file(GLOB ONEIRO_COMMON_HEADER_FILES
+file(GLOB ONEIRO_COMMON_PCH_FILES
         "Engine/Source/Common/Common.hpp"
 )
 
@@ -50,9 +50,9 @@ file(GLOB ONEIRO_COMMON_SOURCE_FILES
 )
 
 add_library(Oneiro-Common STATIC ${ONEIRO_COMMON_SOURCE_FILES})
-target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_INCLUDE_DIRS} ${NANO_SIGNAL_SLOT_INCLUDE_DIRS})
+target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_INCLUDE_DIRS})
 target_link_libraries(Oneiro-Common PUBLIC yaml-cpp fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof Tracy::TracyClient)
-target_precompile_headers(Oneiro-Common PUBLIC ${ONEIRO_COMMON_HEADER_FILES})
+target_precompile_headers(Oneiro-Common PUBLIC ${ONEIRO_COMMON_PCH_FILES})
 
 file(GLOB ONEIRO_MODULE_WM_SDL_SOURCE_FILES
         "Engine/Source/Modules/WM/*.cpp"
