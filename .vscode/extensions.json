@@ -1,0 +1,7 @@
+{
+    "recommendations": [
+        "christian-kohler.path-intellisense",
+        "xaver.clang-format",
+        "slevesque.shader"
+    ]
+}

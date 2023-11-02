@@ -1,0 +1,8 @@
+# VS Cache
+.vs
+
+# MacOS Cache
+.DS_Store
+
+# CMake Cache
+cmake-build-*

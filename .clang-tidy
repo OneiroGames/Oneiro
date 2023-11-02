@@ -1,0 +1,9 @@
+#file: noinspection LongLine
+---
+Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, modernize-*, bugprone-*, concurrency-*, google-*, hicpp-*, llvm-*, misc-*, performance-*, portability-*, readability-*, 
+
+        -modernize-use-trailing-return-type, -readability-magic-numbers, -cppcoreguidelines-avoid-magic-numbers, -llvm-header-guard, -readability-braces-around-statements,
+        -google-readability-braces-around-statements, -cppcoreguidelines-pro-type-vararg, -hicpp-vararg, -hicpp-braces-around-statements, -readability-implicit-bool-conversion,
+        -hicpp-uppercase-literal-suffix, -readability-uppercase-literal-suffix, -cppcoreguidelines-pro-type-union-access, -hicpp-signed-bitwise, -misc-non-private-member-variables-in-classes,
+        -cppcoreguidelines-pro-bounds-constant-array-index, -cppcoreguidelines-pro-bounds-pointer-arithmetic, -cppcoreguidelines-avoid-non-const-global-variables,
+        -cppcoreguidelines-pro-type-reinterpret-cast, -deprecated-volatile, -c99-designator, -performance-no-int-to-ptr'

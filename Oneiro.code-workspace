@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"clang-format.assumeFilename": ".clang-format",
+		"path-intellisense.showHiddenFiles": true,
+		"path-intellisense.autoSlashAfterDirectory": true,
+		"path-intellisense.extensionOnImport": true,
+		"explorer.confirmDelete": false,
+		"explorer.confirmDragAndDrop": false,
+		"explorer.copyRelativePathSeparator": "/",
+		"window.title": "${rootName}${separator}${appName}",
+		"workbench.cloudChanges.autoResume": "off",
+		"workbench.cloudChanges.continueOn": "off",
+		"editor.fontFamily": "'JetBrains Mono', 'monospace', monospace",
+		"editor.cursorStyle": "line-thin",
+		"files.exclude": {
+			"**.idea": true,
+			"**.xmake": true,
+			"cmake-build-**": true
+		}
+		
+	}
+}

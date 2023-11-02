@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/Engine/Include" />
+      <file path="$PROJECT_DIR$/Engine/Source" />
+      <file path="$PROJECT_DIR$/OEditor/Source" />
+      <file path="$PROJECT_DIR$/SandBox/Source" />
+    </sourceRoots>
+    <libraryRoots>
+      <file path="$PROJECT_DIR$/Engine/ThirdParty" />
+      <file path="$PROJECT_DIR$/cmake-build-debug/vcpkg_installed" />
+      <file path="$PROJECT_DIR$/cmake-build-release/vcpkg_installed" />
+      <file path="$PROJECT_DIR$/cmake-build-relwithdebinfo/vcpkg_installed" />
+    </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.vs" />
+      <file path="$PROJECT_DIR$/.vscode" />
+      <file path="$PROJECT_DIR$/OEditor/Assets" />
+      <file path="$PROJECT_DIR$/OEditor/Configs" />
+      <file path="$PROJECT_DIR$/SandBox/Assets" />
+    </excludeRoots>
+  </component>
+</project>
