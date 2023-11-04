@@ -17,8 +17,7 @@
 void oe::Engine::Init(IApplication* application)
 {
 	m_EngineApi = CreateRef<EngineApi>();
-
-	m_EngineApi->application = application;
+	m_EngineApi->Initialize(application);
 
 	JobSystem::Init();
 
@@ -65,6 +64,9 @@ void oe::Engine::Run()
 
 		JobSystem::Wait();
 
+		BeginImGuiFrame();
+		EndImGuiFrame();
+
 		window->Update();
 	}
 
@@ -79,6 +81,8 @@ void oe::Engine::Shutdown()
 
 	m_EngineApi->cVars->Save();
 
+	ShutdownImGui();
+
 	m_EngineApi->windowManager->GetPlatformWindow(0)->Destroy();
 
 	m_EngineApi->rendererBackend->Shutdown();
@@ -86,6 +90,8 @@ void oe::Engine::Shutdown()
 
 	m_EngineApi->windowManager->Shutdown();
 	m_EngineApi->moduleManager->UnLoadModule(m_WMModule);
+
+	m_EngineApi->Shutdown();
 
 	JobSystem::Shutdown();
 	FileSystem::Shutdown();

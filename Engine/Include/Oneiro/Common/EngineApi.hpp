@@ -21,6 +21,10 @@ namespace oe
 	public:
 		EngineApi();
 
+		bool Initialize(IApplication* application);
+
+		bool Shutdown();
+
 		static IApplication* GetApplication()
 		{
 			return instance->application;

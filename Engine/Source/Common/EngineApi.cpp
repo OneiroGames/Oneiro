@@ -12,8 +12,21 @@ namespace oe
 	EngineApi::EngineApi()
 	{
 		instance = this;
+	}
+
+	bool EngineApi::Initialize(IApplication* application)
+	{
+		this->application = application;
 		profiler = &::tracy::GetProfiler();
 		moduleManager = CreateRef<ModuleManager>();
 		cVars = CreateRef<CVars>();
+		return true;
+	}
+
+	bool EngineApi::Shutdown()
+	{
+		cVars.reset();
+		moduleManager.reset();
+		return true;
 	}
 } // namespace oe
