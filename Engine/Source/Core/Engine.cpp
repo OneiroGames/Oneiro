@@ -42,7 +42,7 @@ void oe::Engine::Run()
 {
 	mIsRuntime = true;
 
-	auto* window = m_EngineApi->windowManager->GetPlatformWindow(0);
+	const auto& window = m_EngineApi->windowManager->GetPlatformWindow(0);
 
 	float lastFrame{};
 	float currentFrame{};
@@ -50,6 +50,7 @@ void oe::Engine::Run()
 	while (window->IsActive())
 	{
 		window->PollEvents();
+		
 		currentFrame = m_EngineApi->windowManager->GetTime();
 		mDeltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;

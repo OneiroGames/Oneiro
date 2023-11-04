@@ -46,7 +46,7 @@ namespace oe
 			{
 				vars.numVars[item.first] = item.second;
 			}
-			m_Variables.push_back({path, vars});
+			m_Variables.emplace_back(path, vars);
 		}
 
 		void Save()

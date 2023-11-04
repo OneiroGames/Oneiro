@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <array>
 #include <utility>
 
 #include "SimpleIni.h"
@@ -109,12 +110,12 @@ namespace oe::FileSystem
 					}
 					else if constexpr (std::is_arithmetic_v<T>)
 					{
-						char szValue[64] = {0};
+						std::array<char, 64> size{};
 						SI_ConvertA<char> conv(m_File.IsUnicode());
-						if (conv.ConvertToStore(value, szValue, sizeof(szValue)))
+						if (conv.ConvertToStore(value, size.data(), sizeof(size)))
 						{
 							char* suffix = nullptr;
-							double nValue = strtod(szValue, &suffix);
+							double nValue = strtod(size.data(), &suffix);
 							if (!suffix || *suffix)
 							{
 								continue;
@@ -124,7 +125,7 @@ namespace oe::FileSystem
 					}
 					else if (std::is_same_v<T, bool>)
 					{
-						switch (value[0])
+						switch (value[0]) // NOLINT(*-pro-bounds-pointer-arithmetic)
 						{
 							case 't':
 							case 'T': // true
@@ -142,13 +143,14 @@ namespace oe::FileSystem
 
 							case 'o':
 							case 'O':
-								if (value[1] == 'n' || value[1] == 'N')
+								if (value[1] == 'n' || value[1] == 'N') // NOLINT(*-pro-bounds-pointer-arithmetic)
 									vec.push_back({key.pItem, true});
-								if (value[1] == 'f' || value[1] == 'F')
+								if (value[1] == 'f' || value[1] == 'F') // NOLINT(*-pro-bounds-pointer-arithmetic)
 									vec.push_back({key.pItem, false});
 								break;
 						}
 					}
+					else {}
 				}
 			}
 		}
