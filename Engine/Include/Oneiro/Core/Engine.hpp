@@ -28,6 +28,7 @@ namespace oe
 		Ref<FileSystem::ConfigFile> m_ConfigFile{};
 
 		IModule* m_WMModule{};
+		IModule* m_RendererModule{};
 
 		inline static float mDeltaTime{};
 		inline static bool mIsRuntime{};

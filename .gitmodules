@@ -1,0 +1,3 @@
+[submodule "Engine/ThirdParty/fwog"]
+	path = Engine/ThirdParty/fwog
+	url = https://github.com/OneiroGames/fwog

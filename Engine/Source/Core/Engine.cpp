@@ -28,12 +28,18 @@ void oe::Engine::Init(IApplication* application)
 	m_EngineApi->cVars->Load("/Configs/Engine.ini");
 
 	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM"));
+	m_RendererModule = m_EngineApi->moduleManager->LoadModule("Oneiro-Module-Renderer-GL.dll");
 
 	const auto& props = application->GetProperties().windowProperties;
 	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(props);
+	m_EngineApi->rendererBackend->PreInitialize();
 	window->Create();
+	m_EngineApi->rendererBackend->Initialize(window);
 
 	application->OnPreInit();
+
+	InitializeImGui();
+
 	application->OnInit();
 	JobSystem::Wait();
 }
@@ -50,7 +56,7 @@ void oe::Engine::Run()
 	while (window->IsActive())
 	{
 		window->PollEvents();
-		
+
 		currentFrame = m_EngineApi->windowManager->GetTime();
 		mDeltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -74,6 +80,9 @@ void oe::Engine::Shutdown()
 	m_EngineApi->cVars->Save();
 
 	m_EngineApi->windowManager->GetPlatformWindow(0)->Destroy();
+
+	m_EngineApi->rendererBackend->Shutdown();
+	m_EngineApi->moduleManager->UnLoadModule(m_RendererModule);
 
 	m_EngineApi->windowManager->Shutdown();
 	m_EngineApi->moduleManager->UnLoadModule(m_WMModule);

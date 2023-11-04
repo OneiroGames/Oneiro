@@ -23,6 +23,7 @@ namespace oe
 		void* wnd{};
 		void* inst{};
 		void* userdata{};
+		void* procAddress{};
 	};
 
 	namespace Input

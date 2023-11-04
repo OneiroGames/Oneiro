@@ -75,7 +75,7 @@ namespace oe
 			}
 		}
 
-		bool GetBool(const std::string& key)
+		bool GetBool(const std::string& key, bool defaultValue = {})
 		{
 			for (const auto& item : m_Variables)
 			{
@@ -85,10 +85,10 @@ namespace oe
 					return iter->second;
 				}
 			}
-			return {};
+			return defaultValue;
 		}
 
-		std::string GetString(const std::string& key)
+		std::string GetString(const std::string& key, const std::string& defaultValue = {})
 		{
 			for (const auto& item : m_Variables)
 			{
@@ -98,10 +98,10 @@ namespace oe
 					return iter->second;
 				}
 			}
-			return {};
+			return defaultValue;
 		}
 
-		double GetNumber(const std::string& key)
+		double GetNumber(const std::string& key, double defaultValue = {})
 		{
 			for (const auto& item : m_Variables)
 			{
@@ -111,7 +111,7 @@ namespace oe
 					return iter->second;
 				}
 			}
-			return {};
+			return defaultValue;
 		}
 
 		void SetBool(const std::string& key, bool val)

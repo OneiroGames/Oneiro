@@ -33,6 +33,8 @@ find_package(imguizmo CONFIG REQUIRED)
 find_package(nameof CONFIG REQUIRED)
 find_package(Tracy CONFIG REQUIRED)
 
+add_subdirectory(./Engine/ThirdParty/fwog)
+
 set(CMAKE_UNITY_BUILD ON)
 set(CMAKE_UNITY_BUILD_BATCH_SIZE 3)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -50,7 +52,7 @@ file(GLOB ONEIRO_COMMON_SOURCE_FILES
 )
 
 add_library(Oneiro-Common STATIC ${ONEIRO_COMMON_SOURCE_FILES})
-target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_INCLUDE_DIRS})
+target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_INCLUDE_DIRS} "Engine/ThirdParty/")
 target_link_libraries(Oneiro-Common PUBLIC yaml-cpp fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof Tracy::TracyClient)
 target_precompile_headers(Oneiro-Common PUBLIC ${ONEIRO_COMMON_PCH_FILES})
 
@@ -68,16 +70,25 @@ file(GLOB ONEIRO_RENDERER_SOURCE_FILES
 add_library(Oneiro-Renderer SHARED ${ONEIRO_RENDERER_SOURCE_FILES})
 target_link_libraries(Oneiro-Renderer PUBLIC Oneiro-Common imgui::imgui imguizmo::imguizmo)
 
+file(GLOB ONEIRO_RENDERER_GL_SOURCE_FILES
+        "Engine/Source/Renderer/GL/*.cpp"
+        "Engine/ThirdParty/glad/src/gl.c"
+)
+
+add_library(Oneiro-Module-Renderer-GL SHARED ${ONEIRO_RENDERER_GL_SOURCE_FILES})
+target_link_libraries(Oneiro-Module-Renderer-GL PUBLIC Oneiro-Renderer fwog)
+target_include_directories(Oneiro-Module-Renderer-GL PUBLIC "Engine/ThirdParty/glad/include/")
+
 file(GLOB ONEIRO_CORE_SOURCE_FILES
         "Engine/Source/Core/*.cpp"
 )
 
 add_library(Oneiro-Core SHARED ${ONEIRO_CORE_SOURCE_FILES})
-target_link_libraries(Oneiro-Core PUBLIC Oneiro-Common)
+target_link_libraries(Oneiro-Core PUBLIC Oneiro-Common Oneiro-Renderer)
 
 file(GLOB SANDBOX_SOURCE_FILES
         "SandBox/Source/*.cpp"
 )
 
 add_executable(SandBox ${SANDBOX_SOURCE_FILES})
-target_link_libraries(SandBox PUBLIC Oneiro-Core Oneiro-Module-WM-SDL)
+target_link_libraries(SandBox PUBLIC Oneiro-Core Oneiro-Module-WM-SDL Oneiro-Module-Renderer-GL)
