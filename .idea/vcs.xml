@@ -3,5 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Engine/ThirdParty/fwog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Engine/fwog/cmake-build-debug/_deps/fastgltf-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Engine/fwog/cmake-build-debug/_deps/glm-src" vcs="Git" />
   </component>
 </project>

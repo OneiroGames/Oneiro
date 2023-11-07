@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Oneiro/Common/IApplication.hpp"
-#include "Oneiro/Common/IRenderer.hpp"
+#include "Oneiro/Common/Renderer/IRendererBackend.hpp"
 #include "Oneiro/Common/WM/IWindowManager.hpp"
 
 #include "CVars.hpp"
@@ -35,7 +35,7 @@ namespace oe
 			return instance->windowManager;
 		}
 
-		static IRenderer* GetRendererBackend()
+		static Renderer::IRendererBackend* GetRendererBackend()
 		{
 			return instance->rendererBackend;
 		}
@@ -57,7 +57,7 @@ namespace oe
 
 		IApplication* application{};
 		IWindowManager* windowManager{};
-		IRenderer* rendererBackend{};
+		Renderer::IRendererBackend* rendererBackend{};
 		tracy::Profiler* profiler{};
 
 		Ref<ModuleManager> moduleManager{};

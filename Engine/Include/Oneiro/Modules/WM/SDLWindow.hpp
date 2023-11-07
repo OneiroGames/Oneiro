@@ -31,13 +31,17 @@ namespace oe
 			auto flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 			switch (EngineApi::GetRendererBackend()->GetBackendType())
 			{
-				case ERendererBackendType::GL: flags |= SDL_WINDOW_OPENGL; break;
+				case Renderer::ERendererBackendType::GL:
+					flags |= SDL_WINDOW_OPENGL;
+					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+					SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+					break;
 			}
 			m_Window = SDL_CreateWindow(m_Properties.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Properties.width,
 										m_Properties.height, flags);
 			switch (EngineApi::GetRendererBackend()->GetBackendType())
 			{
-				case ERendererBackendType::GL: SDL_GL_CreateContext(m_Window); break;
+				case Renderer::ERendererBackendType::GL: SDL_GL_CreateContext(m_Window); break;
 			}
 		}
 
@@ -45,7 +49,7 @@ namespace oe
 		{
 			switch (EngineApi::GetRendererBackend()->GetBackendType())
 			{
-				case ERendererBackendType::GL: SDL_GL_SwapWindow(m_Window); break;
+				case Renderer::ERendererBackendType::GL: SDL_GL_SwapWindow(m_Window); break;
 			}
 		}
 
@@ -94,7 +98,7 @@ namespace oe
 			void* procAddress{};
 			switch (EngineApi::GetRendererBackend()->GetBackendType())
 			{
-				case ERendererBackendType::GL: procAddress = SDL_GL_GetProcAddress; break;
+				case Renderer::ERendererBackendType::GL: procAddress = SDL_GL_GetProcAddress; break;
 			}
 			return {.wnd = wmInfo.info.win.window, .inst = wmInfo.info.win.hinstance, .procAddress = procAddress};
 		}

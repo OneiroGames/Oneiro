@@ -11,8 +11,9 @@
 #include "Oneiro/Common/LayerManager.hpp"
 #include "Oneiro/Common/ModuleManager.hpp"
 #include "Oneiro/Common/Profiler.hpp"
+#include "Oneiro/Common/Renderer/Renderer.hpp"
 #include "Oneiro/Renderer/ImGui/ImGui.hpp"
-#include "Oneiro/Renderer/Renderer.hpp"
+#include "Oneiro/Renderer/Renderer2D.hpp"
 
 void oe::Engine::Init(IApplication* application)
 {
@@ -27,7 +28,7 @@ void oe::Engine::Init(IApplication* application)
 	m_EngineApi->cVars->Load("/Configs/Engine.ini");
 
 	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM"));
-	m_RendererModule = m_EngineApi->moduleManager->LoadModule("Oneiro-Module-Renderer-GL.dll");
+	m_RendererModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("backend", "Oneiro-Module-Renderer-GL.dll"));
 
 	const auto& props = application->GetProperties().windowProperties;
 	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(props);
@@ -38,6 +39,7 @@ void oe::Engine::Init(IApplication* application)
 	application->OnPreInit();
 
 	InitializeImGui();
+	Renderer2D::Initialize();
 
 	application->OnInit();
 	JobSystem::Wait();
@@ -62,10 +64,9 @@ void oe::Engine::Run()
 
 		m_EngineApi->application->OnUpdate(mDeltaTime);
 
-		JobSystem::Wait();
+		Renderer2D::Draw();
 
-		BeginImGuiFrame();
-		EndImGuiFrame();
+		JobSystem::Wait();
 
 		window->Update();
 	}
@@ -84,6 +85,8 @@ void oe::Engine::Shutdown()
 	ShutdownImGui();
 
 	m_EngineApi->windowManager->GetPlatformWindow(0)->Destroy();
+
+	Renderer2D::Shutdown();
 
 	m_EngineApi->rendererBackend->Shutdown();
 	m_EngineApi->moduleManager->UnLoadModule(m_RendererModule);

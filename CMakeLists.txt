@@ -40,7 +40,8 @@ set(CMAKE_UNITY_BUILD_BATCH_SIZE 3)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 file(GLOB ONEIRO_COMMON_PCH_FILES
-        "Engine/Source/Common/Common.hpp"
+        "Engine/Include/Common/Common.hpp"
+        "Engine/Include/Common/EngineApi.hpp"
 )
 
 file(GLOB ONEIRO_COMMON_SOURCE_FILES
@@ -56,13 +57,6 @@ target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_IN
 target_link_libraries(Oneiro-Common PUBLIC yaml-cpp fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof Tracy::TracyClient)
 target_precompile_headers(Oneiro-Common PUBLIC ${ONEIRO_COMMON_PCH_FILES})
 
-file(GLOB ONEIRO_MODULE_WM_SDL_SOURCE_FILES
-        "Engine/Source/Modules/WM/*.cpp"
-)
-
-add_library(Oneiro-Module-WM-SDL SHARED ${ONEIRO_MODULE_WM_SDL_SOURCE_FILES})
-target_link_libraries(Oneiro-Module-WM-SDL PUBLIC Oneiro-Common $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static> imgui::imgui)
-
 file(GLOB ONEIRO_RENDERER_SOURCE_FILES
         "Engine/Source/Renderer/*.cpp"
 )
@@ -70,14 +64,19 @@ file(GLOB ONEIRO_RENDERER_SOURCE_FILES
 add_library(Oneiro-Renderer SHARED ${ONEIRO_RENDERER_SOURCE_FILES})
 target_link_libraries(Oneiro-Renderer PUBLIC Oneiro-Common imgui::imgui imguizmo::imguizmo)
 
+file(GLOB ONEIRO_MODULE_WM_SDL_SOURCE_FILES
+        "Engine/Source/Modules/WM/*.cpp"
+)
+
+add_library(Oneiro-Module-WM-SDL SHARED ${ONEIRO_MODULE_WM_SDL_SOURCE_FILES})
+target_link_libraries(Oneiro-Module-WM-SDL PUBLIC Oneiro-Common $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static> imgui::imgui)
+
 file(GLOB ONEIRO_RENDERER_GL_SOURCE_FILES
-        "Engine/Source/Renderer/GL/*.cpp"
-        "Engine/ThirdParty/glad/src/gl.c"
+        "Engine/Source/Modules/Renderer/Backend/GL/*.cpp"
 )
 
 add_library(Oneiro-Module-Renderer-GL SHARED ${ONEIRO_RENDERER_GL_SOURCE_FILES})
 target_link_libraries(Oneiro-Module-Renderer-GL PUBLIC Oneiro-Renderer fwog)
-target_include_directories(Oneiro-Module-Renderer-GL PUBLIC "Engine/ThirdParty/glad/include/")
 
 file(GLOB ONEIRO_CORE_SOURCE_FILES
         "Engine/Source/Core/*.cpp"
