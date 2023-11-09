@@ -17,7 +17,6 @@ namespace oe
 	bool EngineApi::Initialize(IApplication* application)
 	{
 		this->application = application;
-		profiler = &::tracy::GetProfiler();
 		moduleManager = CreateRef<ModuleManager>();
 		cVars = CreateRef<CVars>();
 		return true;

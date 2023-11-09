@@ -17,11 +17,6 @@ namespace oe::FileSystem
 		return m_Module && m_Module != INVALID_HANDLE_VALUE;
 	}
 
-	void* DynamicLibrary::GetFunction(const std::string& name)
-	{
-		return GetProcAddress(m_Module, name.c_str());
-	}
-
 	void DynamicLibrary::Close()
 	{
 		FreeLibrary(m_Module);

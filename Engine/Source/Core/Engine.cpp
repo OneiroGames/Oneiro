@@ -8,7 +8,6 @@
 #include "Oneiro/Common/FileSystem/FileSystem.hpp"
 #include "Oneiro/Common/IApplication.hpp"
 #include "Oneiro/Common/JobSystem.hpp"
-#include "Oneiro/Common/LayerManager.hpp"
 #include "Oneiro/Common/ModuleManager.hpp"
 #include "Oneiro/Common/Profiler.hpp"
 #include "Oneiro/Common/Renderer/Renderer.hpp"
@@ -20,18 +19,15 @@ void oe::Engine::Init(IApplication* application)
 	m_EngineApi = CreateRef<EngineApi>();
 	m_EngineApi->Initialize(application);
 
-	JobSystem::Init();
-
 	FileSystem::Init();
 	FileSystem::Mount(".", "/");
 
 	m_EngineApi->cVars->Load("/Configs/Engine.ini");
 
-	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM"));
+	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM", "Oneiro-Module-WM-SDL.dll"));
 	m_RendererModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("backend", "Oneiro-Module-Renderer-GL.dll"));
 
-	const auto& props = application->GetProperties().windowProperties;
-	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(props);
+	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(application->GetProperties().windowProperties);
 	m_EngineApi->rendererBackend->PreInitialize();
 	window->Create();
 	m_EngineApi->rendererBackend->Initialize(window);
@@ -42,7 +38,6 @@ void oe::Engine::Init(IApplication* application)
 	Renderer2D::Initialize();
 
 	application->OnInit();
-	JobSystem::Wait();
 }
 
 void oe::Engine::Run()
@@ -66,8 +61,6 @@ void oe::Engine::Run()
 
 		Renderer2D::Draw();
 
-		JobSystem::Wait();
-
 		window->Update();
 	}
 
@@ -76,8 +69,6 @@ void oe::Engine::Run()
 
 void oe::Engine::Shutdown()
 {
-	JobSystem::Wait();
-
 	m_EngineApi->application->OnShutdown();
 
 	m_EngineApi->cVars->Save();

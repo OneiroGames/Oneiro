@@ -17,6 +17,7 @@
     <excludeRoots>
       <file path="$PROJECT_DIR$/.vs" />
       <file path="$PROJECT_DIR$/.vscode" />
+      <file path="$PROJECT_DIR$/Engine/Configs" />
       <file path="$PROJECT_DIR$/OEditor/Assets" />
       <file path="$PROJECT_DIR$/OEditor/Configs" />
       <file path="$PROJECT_DIR$/SandBox/Assets" />

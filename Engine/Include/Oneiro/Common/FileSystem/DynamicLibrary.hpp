@@ -8,7 +8,6 @@
 #include "Oneiro/Common/FileSystem/Path.hpp"
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <Windows.h>
 #endif
 
@@ -19,7 +18,11 @@ namespace oe::FileSystem
 	public:
 		bool Load(const std::string& path);
 
-		void* GetFunction(const std::string& name);
+		template <class T>
+		T GetFunction(const std::string& name)
+		{
+			return reinterpret_cast<T>(GetProcAddress(m_Module, name.c_str()));
+		}
 
 		void Close();
 

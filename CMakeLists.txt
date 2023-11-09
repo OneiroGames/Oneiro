@@ -54,7 +54,7 @@ file(GLOB ONEIRO_COMMON_SOURCE_FILES
 
 add_library(Oneiro-Common STATIC ${ONEIRO_COMMON_SOURCE_FILES})
 target_include_directories(Oneiro-Common PUBLIC "Engine/Include/" ${SIMPLEINI_INCLUDE_DIRS} "Engine/ThirdParty/")
-target_link_libraries(Oneiro-Common PUBLIC yaml-cpp fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof Tracy::TracyClient)
+target_link_libraries(Oneiro-Common PUBLIC yaml-cpp fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof)
 target_precompile_headers(Oneiro-Common PUBLIC ${ONEIRO_COMMON_PCH_FILES})
 
 file(GLOB ONEIRO_RENDERER_SOURCE_FILES

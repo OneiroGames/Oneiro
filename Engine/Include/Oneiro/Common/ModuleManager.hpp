@@ -15,31 +15,30 @@ namespace oe
 	public:
 		IModule* LoadModule(const FileSystem::Path& path, bool initialize = true)
 		{
-			auto dynamicLibrary = CreateRef<FileSystem::DynamicLibrary>();
-			dynamicLibrary->Load(path.string());
-			auto* module = reinterpret_cast<CreateModuleFunc>(dynamicLibrary->GetFunction("CreateModule"))(EngineApi::instance);
-			m_Modules.push_back({dynamicLibrary, module});
+			auto& pair = m_Modules.emplace_back(std::pair<FileSystem::DynamicLibrary, IModule*>{{}, {}});
+			pair.first.Load(path.string());
+			pair.second = pair.first.GetFunction<CreateModuleFunc>("CreateModule")(EngineApi::instance);
 			if (initialize)
-				module->Initialize();
-			return module;
+				pair.second->Initialize();
+			return pair.second;
 		}
 
 		void UnLoadModule(IModule* module, bool shutdown = true)
 		{
 			for (size_t i{}; i < m_Modules.size(); i++)
 			{
-				const auto& mod = m_Modules[i];
+				auto& mod = m_Modules[i];
 				if (mod.second == module)
 				{
 					if (shutdown)
 						module->Shutdown();
-					reinterpret_cast<DestroyModuleFunc>(mod.first->GetFunction("DestroyModule"))(module);
+					mod.first.GetFunction<DestroyModuleFunc>("DestroyModule")(module);
 					m_Modules.erase(m_Modules.begin() + i);
 				}
 			}
 		}
 
 	private:
-		std::vector<std::pair<Ref<FileSystem::DynamicLibrary>, IModule*>> m_Modules{};
+		std::vector<std::pair<FileSystem::DynamicLibrary, IModule*>> m_Modules{};
 	};
 } // namespace oe
