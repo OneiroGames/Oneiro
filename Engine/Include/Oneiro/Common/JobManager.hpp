@@ -1,0 +1,296 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+#pragma once
+
+#include "Oneiro/Common/Common.hpp"
+
+#include <algorithm>
+#include <atomic>
+#include <cassert>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <sstream>
+#include <thread>
+
+namespace oe
+{
+	template <class T, size_t capacity>
+	class ThreadSafeRingBuffer
+	{
+	public:
+		inline bool push_back(const T& item)
+		{
+			bool result{};
+			m_Lock.lock();
+			const auto next = (m_Head + 1) % capacity;
+			if (next != m_Tail)
+			{
+				m_Data[m_Head] = item;
+				m_Head = next;
+				result = true;
+			}
+			m_Lock.unlock();
+			return result;
+		}
+
+		inline bool pop_front(T& item)
+		{
+			bool result{};
+			m_Lock.lock();
+			if (m_Tail != m_Head)
+			{
+				item = m_Data[m_Tail];
+				m_Tail = (m_Tail + 1) % capacity;
+				result = true;
+			}
+			m_Lock.unlock();
+			return result;
+		}
+
+	private:
+		T m_Data[capacity]{};
+		size_t m_Head{};
+		size_t m_Tail{};
+		std::mutex m_Lock{};
+	};
+
+	// Original: https://wickedengine.net/2018/11/24/simple-job-system-using-standard-c/
+	class JobManager
+	{
+	public:
+		static void Initialize()
+		{
+			m_FinishedLabel.store(0);
+
+			auto numCores = std::thread::hardware_concurrency();
+			m_NumThreads = std::max(1u, numCores);
+			for (uint32_t threadID = 0; threadID < m_NumThreads; ++threadID)
+			{
+				std::thread worker([] {
+					std::function<void()> job;
+
+					while (true)
+					{
+						if (m_JobPool.pop_front(job))
+						{
+							job();
+							m_FinishedLabel.fetch_add(1);
+						}
+						else
+						{
+							std::unique_lock<std::mutex> lock(m_WakeMutex);
+							m_WakeCondition.wait(lock);
+							if (m_IsShouldExit)
+								return;
+						}
+					}
+				});
+
+#ifdef _WIN32
+				HANDLE handle = (HANDLE)worker.native_handle();
+
+				DWORD_PTR affinityMask = 1ull << threadID;
+				DWORD_PTR affinity_result = SetThreadAffinityMask(handle, affinityMask);
+				assert(affinity_result > 0);
+
+				std::wstringstream wss;
+				wss << "JobManager_" << threadID;
+				HRESULT hr = SetThreadDescription(handle, wss.str().c_str());
+				assert(SUCCEEDED(hr));
+#endif // _WIN32
+				worker.detach();
+			}
+		}
+
+		static void AddTask(const std::function<void()>& job)
+		{
+			m_CurrentLabel += 1;
+			while (!m_JobPool.push_back(job))
+				Poll();
+
+			m_WakeCondition.notify_one();
+		}
+
+		static bool IsBusy()
+		{
+			return m_FinishedLabel.load() < m_CurrentLabel;
+		}
+
+		static void Wait()
+		{
+			while (IsBusy())
+				Poll();
+		}
+
+		static void Poll()
+		{
+			m_WakeCondition.notify_one();
+			std::this_thread::yield();
+		}
+
+		static void Shutdown()
+		{
+			m_IsShouldExit = true;
+			Wait();
+			m_WakeCondition.notify_all();
+		}
+
+	private:
+		inline static uint32_t m_NumThreads{};
+		inline static ThreadSafeRingBuffer<std::function<void()>, 256> m_JobPool;
+		inline static std::condition_variable m_WakeCondition{};
+		inline static std::mutex m_WakeMutex{};
+		inline static uint64_t m_CurrentLabel{};
+		inline static std::atomic<uint64_t> m_FinishedLabel{};
+		inline static bool m_IsShouldExit{};
+	};
+
+	class ThreadJob
+	{
+	public:
+		ThreadJob()
+		{
+			m_FinishedLabel.store(0);
+
+			std::thread work([&] {
+				std::function<void()> job;
+
+				while (true)
+				{
+					if (m_JobPool.pop_front(job))
+					{
+						job();
+						m_FinishedLabel.fetch_add(1);
+					}
+					else
+					{
+						std::unique_lock<std::mutex> lock(m_WakeMutex);
+						m_WakeCondition.wait(lock);
+						if (m_IsShouldExit)
+							return;
+					}
+				}
+			});
+
+#ifdef _WIN32
+			HANDLE handle = (HANDLE)work.native_handle();
+
+			DWORD_PTR affinityMask = 1ull;
+			DWORD_PTR affinity_result = SetThreadAffinityMask(handle, affinityMask);
+			assert(affinity_result > 0);
+
+			std::wstringstream wss;
+			wss << "TheadJob";
+			HRESULT hr = SetThreadDescription(handle, wss.str().c_str());
+			assert(SUCCEEDED(hr));
+#endif // _WIN32
+			work.detach();
+		}
+
+		~ThreadJob()
+		{
+			if (!m_IsShouldExit)
+				Shutdown();
+		}
+
+		ThreadJob* AddTask(const std::function<void()>& job)
+		{
+			m_CurrentLabel += 1;
+			while (!m_JobPool.push_back(job))
+				Poll();
+
+			m_WakeCondition.notify_one();
+
+			return this;
+		}
+
+		ThreadJob* AddTasks(const std::initializer_list<const std::function<void()>>& job)
+		{
+			for (auto& item : job)
+			{
+				m_CurrentLabel += 1;
+				while (!m_JobPool.push_back(item))
+					Poll();
+			}
+
+			m_WakeCondition.notify_one();
+
+			return this;
+		}
+
+		bool IsBusy()
+		{
+			return m_FinishedLabel.load() < m_CurrentLabel;
+		}
+
+		void Wait()
+		{
+			while (IsBusy())
+				Poll();
+		}
+
+		void Poll()
+		{
+			m_WakeCondition.notify_one();
+			std::this_thread::yield();
+		}
+
+		void Shutdown()
+		{
+			m_IsShouldExit = true;
+			Wait();
+			m_WakeCondition.notify_all();
+		}
+
+	private:
+		ThreadSafeRingBuffer<std::function<void()>, 256> m_JobPool;
+		std::condition_variable m_WakeCondition{};
+		std::mutex m_WakeMutex{};
+		uint64_t m_CurrentLabel{};
+		std::atomic<uint64_t> m_FinishedLabel{};
+		bool m_IsShouldExit{};
+	};
+
+	class ScopedJob
+	{
+	public:
+		explicit ScopedJob(std::future<void> future)
+		{
+			m_Future = future.share();
+		}
+
+		~ScopedJob()
+		{
+			if (IsBusy())
+				Wait();
+		}
+
+		static Ref<ScopedJob> Execute(const std::function<void()>& job)
+		{
+			return CreateRef<ScopedJob>(std::async(std::launch::async, job));
+		}
+
+		template <class... Args>
+		static Ref<ScopedJob> Execute(const std::function<void(Args...)>& job, Args&&... args)
+		{
+			return CreateRef<ScopedJob>(std::async(std::launch::async, job, args...));
+		}
+
+		void Wait() noexcept
+		{
+			m_Future.wait();
+		}
+
+		[[nodiscard]] bool IsBusy() const noexcept
+		{
+			return m_Future.valid();
+		}
+
+	private:
+		std::shared_future<void> m_Future{};
+	};
+} // namespace oe

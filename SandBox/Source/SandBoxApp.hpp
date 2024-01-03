@@ -7,6 +7,8 @@
 
 #include "Oneiro/Common/IApplication.hpp"
 
+#include "Oneiro/Common/World/World.hpp"
+
 namespace SandBox
 {
 	class SandBoxApp final : public oe::IApplication
@@ -14,8 +16,10 @@ namespace SandBox
 	public:
 		using oe::IApplication::IApplication;
 
-		bool OnInit() override;
-		bool OnUpdate(float deltaTime) override;
+		bool OnInitialize() override;
+		bool OnLogicUpdate(float deltaTime) override;
 		void OnShutdown() override;
+
+		oe::World* world{};
 	};
 } // namespace SandBox

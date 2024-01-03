@@ -7,96 +7,99 @@
 
 #include "Oneiro/Common/FileSystem/FileSystem.hpp"
 #include "Oneiro/Common/IApplication.hpp"
-#include "Oneiro/Common/JobSystem.hpp"
+#include "Oneiro/Common/JobManager.hpp"
 #include "Oneiro/Common/ModuleManager.hpp"
-#include "Oneiro/Common/Profiler.hpp"
-#include "Oneiro/Common/Renderer/Renderer.hpp"
-#include "Oneiro/Renderer/ImGui/ImGui.hpp"
-#include "Oneiro/Renderer/Renderer2D.hpp"
+#include "Oneiro/Common/World/World.hpp"
+#include "Oneiro/Rendering/ImGui/ImGuiManager.hpp"
+#include "Oneiro/Rendering/Renderer2D.hpp"
 
-void oe::Engine::Init(IApplication* application)
+namespace oe
 {
-	m_EngineApi = CreateRef<EngineApi>();
-	m_EngineApi->Initialize(application);
-
-	FileSystem::Init();
-	FileSystem::Mount(".", "/");
-
-	m_EngineApi->cVars->Load("/Configs/Engine.ini");
-
-	m_WMModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("WM", "Oneiro-Module-WM-SDL.dll"));
-	m_RendererModule = m_EngineApi->moduleManager->LoadModule(m_EngineApi->cVars->GetString("backend", "Oneiro-Module-Renderer-GL.dll"));
-
-	const auto& window = m_EngineApi->windowManager->CreatePlatformWindow(application->GetProperties().windowProperties);
-	m_EngineApi->rendererBackend->PreInitialize();
-	window->Create();
-	m_EngineApi->rendererBackend->Initialize(window);
-
-	application->OnPreInit();
-
-	InitializeImGui();
-	Renderer2D::Initialize();
-
-	application->OnInit();
-}
-
-void oe::Engine::Run()
-{
-	mIsRuntime = true;
-
-	const auto& window = m_EngineApi->windowManager->GetPlatformWindow(0);
-
-	float lastFrame{};
-	float currentFrame{};
-
-	while (window->IsActive())
+	void Engine::PreInit(IApplication* application)
 	{
-		window->PollEvents();
+		JobManager::Initialize();
 
-		currentFrame = m_EngineApi->windowManager->GetTime();
-		mDeltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		EngineApi::Initialize(application);
 
-		m_EngineApi->application->OnUpdate(mDeltaTime);
+		m_EngineApi = EngineApi::GetInstance();
 
-		Renderer2D::Draw();
+		FileSystem::Init();
+		FileSystem::Mount(".", "/");
 
-		window->Update();
+		EngineApi::GetCVars()->Load("Engine", "/Configs/Engine.ini");
 	}
 
-	mIsRuntime = false;
-}
+	void Engine::Init()
+	{
+		EngineApi::GetModuleManager()->LoadModulesFromPath("Modules/");
 
-void oe::Engine::Shutdown()
-{
-	m_EngineApi->application->OnShutdown();
+		const auto& window = EngineApi::GetWindowManager()->CreatePlatformWindow(EngineApi::GetApplication()->GetProperties().windowProperties);
 
-	m_EngineApi->cVars->Save();
+		EngineApi::GetRHI()->PreInitialize();
 
-	ShutdownImGui();
+		window->Create();
+		window->CreateContext();
 
-	m_EngineApi->windowManager->GetPlatformWindow(0)->Destroy();
+		EngineApi::GetRHI()->Initialize(window);
 
-	Renderer2D::Shutdown();
+		EngineApi::GetApplication()->OnPreInitialize();
 
-	m_EngineApi->rendererBackend->Shutdown();
-	m_EngineApi->moduleManager->UnLoadModule(m_RendererModule);
+		Renderer2D::Initialize();
+		ImGuiManager::Initialize(EngineApi::GetInstance());
 
-	m_EngineApi->windowManager->Shutdown();
-	m_EngineApi->moduleManager->UnLoadModule(m_WMModule);
+		EngineApi::GetApplication()->OnInitialize();
+	}
 
-	m_EngineApi->Shutdown();
+	void Engine::Run()
+	{
+		m_IsRuntime = true;
 
-	JobSystem::Shutdown();
-	FileSystem::Shutdown();
-}
+		const auto& window = EngineApi::GetWindowManager()->GetPlatformWindow(0);
 
-float oe::Engine::GetDeltaTime() noexcept
-{
-	return mDeltaTime;
-}
+		float lastFrame{};
+		float currentFrame{};
 
-bool oe::Engine::IsRuntime() noexcept
-{
-	return mIsRuntime;
-}
+		while (window->IsActive())
+		{
+			window->PollEvents();
+
+			currentFrame = EngineApi::GetWindowManager()->GetTime();
+			m_DeltaTime = currentFrame - lastFrame;
+			lastFrame = currentFrame;
+
+			EngineApi::GetApplication()->OnLogicUpdate(m_DeltaTime);
+
+			EngineApi::GetWorldManager()->GetWorld()->UpdateRuntime(m_DeltaTime);
+
+			Renderer2D::Draw();
+
+			window->Update();
+		}
+
+		m_IsRuntime = false;
+	}
+
+	void Engine::Shutdown()
+	{
+		EngineApi::GetApplication()->OnShutdown();
+		oe::EngineApi::GetAssetsManager()->CollectGarbage();
+		Renderer2D::Shutdown();
+		ImGuiManager::Shutdown();
+		EngineApi::GetCVars()->Save();
+		EngineApi::GetRHI()->Shutdown();
+		EngineApi::GetWindowManager()->GetPlatformWindow(0)->Destroy();
+		EngineApi::GetWindowManager()->Shutdown();
+		EngineApi::Shutdown();
+		JobManager::Shutdown();
+	}
+
+	float Engine::GetDeltaTime() noexcept
+	{
+		return m_DeltaTime;
+	}
+
+	bool Engine::IsRuntime() noexcept
+	{
+		return m_IsRuntime;
+	}
+} // namespace oe

@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <utility>
-
 #include "Oneiro/Common/Common.hpp"
+
+#include <utility>
 
 namespace oe
 {
@@ -153,6 +153,7 @@ namespace oe
 		explicit IWindow(SWindowProperties properties) : m_Properties(std::move(properties)) {}
 
 		virtual void Create() = 0;
+		virtual void CreateContext() = 0;
 		virtual void Update() = 0;
 		virtual void PollEvents() = 0;
 		virtual void Close() = 0;

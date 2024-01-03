@@ -6,26 +6,46 @@
 #include "Oneiro/Common/EngineApi.hpp"
 
 #include "Oneiro/Common/ModuleManager.hpp"
+#include "Oneiro/Common/World/World.hpp"
 
 namespace oe
 {
-	EngineApi::EngineApi()
+	EngineApi::~EngineApi()
 	{
-		instance = this;
+		if (m_Instance->m_IsOwner)
+		{
+			moduleManager.reset();
+			cVars.reset();
+			ecs.reset();
+			worldManager.reset();
+			assetsManager.reset();
+		}
 	}
 
 	bool EngineApi::Initialize(IApplication* application)
 	{
-		this->application = application;
-		moduleManager = CreateRef<ModuleManager>();
-		cVars = CreateRef<CVars>();
+		m_Instance = new EngineApi();
+		m_Instance->m_IsOwner = true;
+		m_Instance->application = application;
+		m_Instance->moduleManager = CreateRef<ModuleManager>();
+		m_Instance->cVars = CreateRef<CVars>();
+		m_Instance->ecs = CreateRef<flecs::world>();
+		m_Instance->worldManager = CreateRef<WorldManager>();
+		m_Instance->assetsManager = CreateRef<AssetsManager>();
 		return true;
+	}
+
+	bool EngineApi::Initialize(EngineApi* api)
+	{
+		m_Instance = api;
+		m_Instance->m_IsOwner = false;
+		return false;
 	}
 
 	bool EngineApi::Shutdown()
 	{
-		cVars.reset();
-		moduleManager.reset();
+		if (m_Instance->m_IsOwner)
+			delete m_Instance;
 		return true;
 	}
 } // namespace oe

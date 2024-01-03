@@ -16,13 +16,10 @@ namespace oe::FileSystem
 		Path(std::filesystem::path path);
 
 		[[nodiscard]] Path GetLocal() const;
-
 		[[nodiscard]] Path GetGlobal() const;
 
 		[[nodiscard]] bool IsValid() const noexcept;
-
 		[[nodiscard]] bool IsLocal() const noexcept;
-
 		[[nodiscard]] bool IsGlobal() const noexcept;
 
 		class Iterator : public std::filesystem::directory_iterator

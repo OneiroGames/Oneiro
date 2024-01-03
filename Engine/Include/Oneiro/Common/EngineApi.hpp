@@ -5,57 +5,88 @@
 
 #pragma once
 
+#include "Oneiro/Common/Assets/AssetsManager.hpp"
+#include "Oneiro/Common/CVars.hpp"
 #include "Oneiro/Common/IApplication.hpp"
-#include "Oneiro/Common/Renderer/IRendererBackend.hpp"
+#include "Oneiro/Common/JobManager.hpp"
+#include "Oneiro/Common/RHI/IRHI.hpp"
 #include "Oneiro/Common/WM/IWindowManager.hpp"
 
-#include "CVars.hpp"
+#include "flecs.h"
+#include "flecs/addons/cpp/flecs.hpp"
 
 namespace oe
 {
 	class ModuleManager;
+	class WorldManager;
 
 	class EngineApi
 	{
 	public:
-		EngineApi();
+		~EngineApi();
 
-		bool Initialize(IApplication* application);
+		static bool Initialize(IApplication* application);
+		static bool Initialize(EngineApi* api);
 
-		bool Shutdown();
+		static bool Shutdown();
 
 		static IApplication* GetApplication()
 		{
-			return instance->application;
+			return m_Instance->application;
 		}
 
 		static IWindowManager* GetWindowManager()
 		{
-			return instance->windowManager;
+			return m_Instance->windowManager;
 		}
 
-		static Renderer::IRendererBackend* GetRendererBackend()
+		static RHI::IRHI* GetRHI()
 		{
-			return instance->rendererBackend;
+			return m_Instance->rhi;
 		}
 
 		static ModuleManager* GetModuleManager()
 		{
-			return instance->moduleManager.get();
+			return m_Instance->moduleManager.get();
 		}
 
 		static CVars* GetCVars()
 		{
-			return instance->cVars.get();
+			return m_Instance->cVars.get();
+		}
+
+		static WorldManager* GetWorldManager()
+		{
+			return m_Instance->worldManager.get();
+		}
+
+		static AssetsManager* GetAssetsManager()
+		{
+			return m_Instance->assetsManager.get();
+		}
+
+		static flecs::world* GetECS()
+		{
+			return m_Instance->ecs.get();
+		}
+
+		static EngineApi* GetInstance()
+		{
+			return m_Instance;
 		}
 
 		IApplication* application{};
 		IWindowManager* windowManager{};
-		Renderer::IRendererBackend* rendererBackend{};
+		RHI::IRHI* rhi{};
 
 		Ref<ModuleManager> moduleManager{};
 		Ref<CVars> cVars{};
+		Ref<WorldManager> worldManager{};
+		Ref<AssetsManager> assetsManager{};
+		Ref<flecs::world> ecs{};
 
-		inline static EngineApi* instance{};
+	private:
+		inline static EngineApi* m_Instance{};
+		bool m_IsOwner{true};
 	};
 } // namespace oe

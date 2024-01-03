@@ -14,7 +14,9 @@
 		auto engine = std::make_unique<oe::Engine>();            \
 		try                                                      \
 		{                                                        \
-			engine->Init(application.get());                     \
+			engine->PreInit(application.get());                  \
+			oe::EngineApi::Initialize(engine->GetApi());         \
+			engine->Init();                                      \
 			engine->Run();                                       \
 		}                                                        \
 		catch (const std::exception& exception)                  \

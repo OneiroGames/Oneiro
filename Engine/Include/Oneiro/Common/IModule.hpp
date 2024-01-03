@@ -17,32 +17,22 @@ namespace oe
 	public:
 		virtual ~IModule() = default;
 
-		IModule() = delete;
-
-		IModule(EngineApi* engineApi)
-		{
-			m_EngineApi = engineApi;
-			m_EngineApiInstance = CreateRef<EngineApi>();
-			m_EngineApiInstance->instance = engineApi;
-		}
-
-		virtual bool Initialize() = 0;
+		virtual bool Initialize(EngineApi* api) = 0;
 		virtual bool Shutdown() = 0;
 
-	protected:
-		EngineApi* GetEngineApi()
+		const std::string& GetName() const
 		{
-			return m_EngineApi;
+			return m_Name;
 		}
 
-	private:
-		EngineApi* m_EngineApi{};
-		Ref<EngineApi> m_EngineApiInstance{};
+	protected:
+		friend class ModuleManager;
+		std::string m_Name{};
 	};
 
-	extern "C" OE_MODULE_API IModule* CreateModule(EngineApi* engineApi);
+	extern "C" OE_MODULE_API IModule* CreateModule();
 	extern "C" OE_MODULE_API void DestroyModule(IModule* engineModule);
 
-	using CreateModuleFunc = IModule* (*)(EngineApi*);
+	using CreateModuleFunc = IModule* (*)();
 	using DestroyModuleFunc = void (*)(IModule*);
 } // namespace oe

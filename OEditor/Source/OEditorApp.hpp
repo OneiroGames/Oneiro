@@ -14,8 +14,8 @@ namespace OEditor
 	public:
 		using oe::IApplication::IApplication;
 
-		bool OnInit() override;
-		bool OnUpdate(float deltaTime) override;
+		bool OnInitialize() override;
+		bool OnLogicUpdate(float deltaTime) override;
 		bool OnEvent(const oe::Event::Base& baseEvent) override;
 		void OnShutdown() override;
 	};

@@ -5,31 +5,34 @@
 
 #pragma once
 
-#include "Oneiro/Common/EngineApi.hpp"
-#include "Oneiro/Common/FileSystem/ConfigFile.hpp"
-#include "Oneiro/Common/FileSystem/DynamicLibrary.hpp"
 #include "Oneiro/Common/IApplication.hpp"
 #include "Oneiro/Common/IModule.hpp"
+#include "Oneiro/Common/JobManager.hpp"
 
 namespace oe
 {
 	class Engine
 	{
 	public:
-		void Init(IApplication* application);
+		void PreInit(IApplication* application);
+		void Init();
 		void Run();
 		void Shutdown();
 
 		static float GetDeltaTime() noexcept;
 		static bool IsRuntime() noexcept;
 
+		EngineApi* GetApi()
+		{
+			return m_EngineApi;
+		}
+
 	private:
-		Ref<EngineApi> m_EngineApi{};
+		inline static float m_DeltaTime{};
+		inline static bool m_IsRuntime{};
 
 		IModule* m_WMModule{};
 		IModule* m_RendererModule{};
-
-		inline static float mDeltaTime{};
-		inline static bool mIsRuntime{};
+		EngineApi* m_EngineApi{};
 	};
 } // namespace oe

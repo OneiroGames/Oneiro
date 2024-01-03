@@ -19,14 +19,17 @@ namespace oe::FileSystem
 		bool Load(const std::string& path);
 
 		template <class T>
-		T GetFunction(const std::string& name)
-		{
-			return reinterpret_cast<T>(GetProcAddress(m_Module, name.c_str()));
-		}
+		T GetFunction(const std::string& name);
 
 		void Close();
 
 	private:
 		HMODULE m_Module{};
 	};
+
+	template <class T>
+	T DynamicLibrary::GetFunction(const std::string& name)
+	{
+		return reinterpret_cast<T>(GetProcAddress(m_Module, name.c_str()));
+	}
 } // namespace oe::FileSystem

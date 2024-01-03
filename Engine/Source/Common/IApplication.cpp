@@ -5,28 +5,39 @@
 
 #include "Oneiro/Common/IApplication.hpp"
 
-oe::IApplication::IApplication(const ApplicationProperties& applicationProperties) : mProps(applicationProperties) {}
+#include <utility>
 
-oe::IApplication::~IApplication() {}
-
-bool oe::IApplication::OnPreInit()
+namespace oe
 {
-	return true;
-}
+	IApplication::IApplication(ApplicationProperties applicationProperties) : mProps(std::move(applicationProperties)) {}
 
-bool oe::IApplication::OnInit()
-{
-	return true;
-}
+	IApplication::~IApplication() = default;
 
-bool oe::IApplication::OnUpdate(float /*deltaTime*/)
-{
-	return true;
-}
+	bool IApplication::OnPreInitialize()
+	{
+		return true;
+	}
 
-void oe::IApplication::OnShutdown() {}
+	bool IApplication::OnInitialize()
+	{
+		return true;
+	}
 
-const oe::ApplicationProperties& oe::IApplication::GetProperties() const noexcept
-{
-	return mProps;
-}
+	bool IApplication::OnLogicUpdate(float /*deltaTime*/)
+	{
+		return true;
+	}
+
+	bool IApplication::OnRender(float deltaTime)
+	{
+		return true;
+	}
+
+	void IApplication::OnShutdown() {}
+
+	const ApplicationProperties& IApplication::GetProperties() const noexcept
+	{
+		return mProps;
+	}
+
+} // namespace oe

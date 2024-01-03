@@ -5,4 +5,5 @@ Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, modernize-*,
         -modernize-use-trailing-return-type, -readability-magic-numbers, -cppcoreguidelines-avoid-magic-numbers, -readability-braces-around-statements,
         -hicpp-vararg, -hicpp-braces-around-statements, -readability-implicit-bool-conversion,
         -hicpp-uppercase-literal-suffix, -readability-uppercase-literal-suffix, -hicpp-signed-bitwise, -misc-non-private-member-variables-in-classes, -microsoft-cast,
-        -deprecated-volatile, -c99-designator, -performance-no-int-to-ptr, -easily-swappable-parameters, -avoid-c-arrays, -pro-bounds-array-to-pointer-decay'
+        -deprecated-volatile, -c99-designator, -performance-no-int-to-ptr, -easily-swappable-parameters, -avoid-c-arrays, -pro-bounds-array-to-pointer-decay,
+        -avoid-non-const-global-variables, -misc-include-cleaner'

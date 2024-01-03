@@ -7,8 +7,6 @@
 
 #include "Oneiro/Common/Common.hpp"
 
-#include <Windows.h>
-
 namespace oe::FileSystem
 {
 	bool DynamicLibrary::Load(const std::string& path)

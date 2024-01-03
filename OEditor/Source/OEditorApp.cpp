@@ -19,7 +19,7 @@
 #include "Oneiro/Core/EntryPoint.hpp"
 #include "Project/Project.hpp"
 
-bool OEditor::OEditorApp::OnInit()
+bool OEditor::OEditorApp::OnInitialize()
 {
 	const auto& layerManager = oe::LayerManager::Get();
 	layerManager->PushLayer<MainMenuBarLayer>("MainMenuBarLayer");
@@ -34,7 +34,7 @@ bool OEditor::OEditorApp::OnInit()
 	return true;
 }
 
-bool OEditor::OEditorApp::OnUpdate(float /*deltaTime*/)
+bool OEditor::OEditorApp::OnLogicUpdate(float /*deltaTime*/)
 {
 	return true;
 }

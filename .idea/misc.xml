@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$/SandBox">
+    <contentRoot DIR="$PROJECT_DIR$" />
+  </component>
   <component name="CidrRootsConfiguration">
     <sourceRoots>
       <file path="$PROJECT_DIR$/Engine/Include" />
@@ -9,7 +11,7 @@
       <file path="$PROJECT_DIR$/SandBox/Source" />
     </sourceRoots>
     <libraryRoots>
-      <file path="$PROJECT_DIR$/Engine/ThirdParty" />
+      <file path="$PROJECT_DIR$/Modules/RHI-GL/ThirdParty" />
       <file path="$PROJECT_DIR$/cmake-build-debug/vcpkg_installed" />
       <file path="$PROJECT_DIR$/cmake-build-release/vcpkg_installed" />
       <file path="$PROJECT_DIR$/cmake-build-relwithdebinfo/vcpkg_installed" />

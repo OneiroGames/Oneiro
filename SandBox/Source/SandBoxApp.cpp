@@ -7,12 +7,18 @@
 
 #include "Oneiro/Core/EntryPoint.hpp"
 
-bool SandBox::SandBoxApp::OnInit()
+#include "Oneiro/Common/Assets/WorldAsset.hpp"
+
+bool SandBox::SandBoxApp::OnInitialize()
 {
+	oe::EngineApi::GetAssetsManager()->RegisterAssetsProvider<oe::WorldAssetsProvider>(typeid(oe::World).hash_code());
+
+	world = oe::EngineApi::GetAssetsManager()->CreateAssetAndLoad<oe::World>("WORLD", false, oe::FileSystem::Path("world.oeworld"))->Get<oe::World>();
+	world->GetOrCreateEntity("test");
 	return true;
 }
 
-bool SandBox::SandBoxApp::OnUpdate(float deltaTime)
+bool SandBox::SandBoxApp::OnLogicUpdate(float deltaTime)
 {
 	return true;
 }
@@ -34,4 +40,4 @@ std::unique_ptr<oe::IApplication> CreateApplication()
 	return std::make_unique<SandBox::SandBoxApp>(applicationProperties);
 }
 
-OE_MAIN(CreateApplication);
+OE_MAIN(CreateApplication)

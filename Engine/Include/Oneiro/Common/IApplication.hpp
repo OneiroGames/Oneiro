@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <memory>
-
 #include "Oneiro/Common/FileSystem/Path.hpp"
 #include "Oneiro/Common/WM/IWindow.hpp"
 
@@ -27,13 +25,14 @@ namespace oe
 	public:
 		IApplication() = delete;
 
-		IApplication(const ApplicationProperties& applicationProperties);
+		IApplication(ApplicationProperties applicationProperties);
 
 		virtual ~IApplication();
 
-		virtual bool OnPreInit();
-		virtual bool OnInit();
-		virtual bool OnUpdate(float deltaTime);
+		virtual bool OnPreInitialize();
+		virtual bool OnInitialize();
+		virtual bool OnLogicUpdate(float deltaTime);
+		virtual bool OnRender(float deltaTime);
 		virtual void OnShutdown();
 
 		[[nodiscard]] const ApplicationProperties& GetProperties() const noexcept;
