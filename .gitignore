@@ -1,4 +1,4 @@
-.idea
-.vs
-.DS_Store
-cmake-build-*
+.idea/
+.vs/
+.DS_Store/
+cmake-build-*/

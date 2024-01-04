@@ -1,13 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(RHI-GL)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_UNITY_BUILD ON)
-set(CMAKE_UNITY_BUILD_BATCH_SIZE 3)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-add_subdirectory(./ThirdParty/glad ThirdParty/glad)
-add_subdirectory(./ThirdParty/fwog ThirdParty/fwog)
+add_subdirectory(ThirdParty/glad ThirdParty/glad)
+add_subdirectory(ThirdParty/fwog ThirdParty/fwog)
 
 file(GLOB ONEIRO_RHI_GL_SOURCE_FILES
         "Source/*.cpp"
@@ -18,6 +13,11 @@ target_link_libraries(Oneiro-Module-RHI-GL PUBLIC Oneiro-Common Oneiro-Rendering
 target_include_directories(Oneiro-Module-RHI-GL PUBLIC "Include/")
 set_target_properties(Oneiro-Module-RHI-GL
         PROPERTIES
+        CXX_STANDARD 23
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 3
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Modules/Oneiro-Module-RHI-GL/"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Modules/Oneiro-Module-RHI-GL/"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Modules/Oneiro-Module-RHI-GL/"
