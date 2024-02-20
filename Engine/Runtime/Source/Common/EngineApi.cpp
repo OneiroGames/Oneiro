@@ -12,20 +12,16 @@ namespace oe
 {
 	EngineApi::~EngineApi()
 	{
-		if (m_Instance->m_IsOwner)
-		{
-			moduleManager.reset();
-			cVars.reset();
-			ecs.reset();
-			worldManager.reset();
-			assetsManager.reset();
-		}
+		moduleManager.reset();
+		cVars.reset();
+		ecs.reset();
+		worldManager.reset();
+		assetsManager.reset();
 	}
 
 	bool EngineApi::Initialize(IApplication* application)
 	{
 		m_Instance = new EngineApi();
-		m_Instance->m_IsOwner = true;
 		m_Instance->application = application;
 		m_Instance->moduleManager = CreateRef<ModuleManager>();
 		m_Instance->cVars = CreateRef<CVars>();
@@ -35,17 +31,20 @@ namespace oe
 		return true;
 	}
 
-	bool EngineApi::Initialize(EngineApi* api)
-	{
-		m_Instance = api;
-		m_Instance->m_IsOwner = false;
-		return false;
-	}
-
 	bool EngineApi::Shutdown()
 	{
-		if (m_Instance->m_IsOwner)
-			delete m_Instance;
+		delete m_Instance;
 		return true;
+	}
+
+	EngineApi* EngineApi::GetInstance()
+	{
+		if (!m_Instance)
+		{
+			FileSystem::DynamicLibrary dynamicLibrary{};
+			dynamicLibrary.Load("Oneiro-Common.dll");
+			m_Instance = dynamicLibrary.GetFunction<CGetInstanceFunc>("CGetInstance")();
+		}
+		return m_Instance;
 	}
 } // namespace oe

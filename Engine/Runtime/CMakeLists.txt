@@ -29,7 +29,7 @@ file(GLOB ONEIRO_COMMON_SOURCE_FILES
         "Source/Common/Assets/*.cpp"
 )
 
-add_library(Oneiro-Common STATIC ${ONEIRO_COMMON_SOURCE_FILES})
+add_library(Oneiro-Common SHARED ${ONEIRO_COMMON_SOURCE_FILES})
 target_include_directories(Oneiro-Common PUBLIC "Include/")
 target_link_libraries(Oneiro-Common PUBLIC fmt::fmt glm::glm PhysFS::PhysFS spdlog::spdlog nameof::nameof xxHash::xxhash
         flecs::flecs rapidjson)

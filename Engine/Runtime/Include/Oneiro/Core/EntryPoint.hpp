@@ -15,7 +15,6 @@
 		try                                                      \
 		{                                                        \
 			engine->PreInit(application.get());                  \
-			oe::EngineApi::Initialize(engine->GetApi());         \
 			engine->Init();                                      \
 			engine->Run();                                       \
 		}                                                        \

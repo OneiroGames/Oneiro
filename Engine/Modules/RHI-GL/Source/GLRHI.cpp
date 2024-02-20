@@ -427,7 +427,6 @@ namespace oe
 
 	bool GLRHIEngineModule::Initialize(EngineApi* api)
 	{
-		EngineApi::Initialize(api);
 		m_RHI = CreateRef<GLRHI>();
 		EngineApi::GetInstance()->rhi = m_RHI.get();
 		return true;
@@ -437,7 +436,6 @@ namespace oe
 	{
 		EngineApi::GetInstance()->rhi = nullptr;
 		m_RHI.reset();
-		EngineApi::Shutdown();
 		return true;
 	}
 } // namespace oe

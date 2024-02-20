@@ -15,7 +15,6 @@ ImGuiContext* oe::ImGuiManager::m_Context = {};
 
 bool oe::ImGuiManager::Initialize(EngineApi* api)
 {
-	EngineApi::Initialize(api);
 	m_Context = ImGui::CreateContext();
 	ImGuiIO& guiIo = ImGui::GetIO();
 	guiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -63,6 +62,5 @@ bool oe::ImGuiManager::Shutdown()
 	EngineApi::GetRHI()->ShutdownImGui();
 	EngineApi::GetWindowManager()->ShutdownImGui();
 	ImGui::DestroyContext();
-	EngineApi::Shutdown();
 	return true;
 }

@@ -21,7 +21,7 @@ namespace oe
 		m_Window = SDL_CreateWindow(m_Properties.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Properties.width,
 									m_Properties.height, flags);
 	}
-	
+
 	void SDLWindow::CreateContext()
 	{
 		switch (EngineApi::GetRHI()->GetRHIType())
@@ -154,7 +154,6 @@ namespace oe
 
 	bool SDLWindowEngineModule::Initialize(EngineApi* api)
 	{
-		EngineApi::Initialize(api);
 		m_SDLWindowManager = CreateRef<SDLWindowManager>();
 		EngineApi::GetInstance()->windowManager = m_SDLWindowManager.get();
 		return true;
@@ -164,7 +163,6 @@ namespace oe
 	{
 		EngineApi::GetInstance()->windowManager = nullptr;
 		m_SDLWindowManager.reset();
-		EngineApi::Shutdown();
 		return true;
 	}
 } // namespace oe

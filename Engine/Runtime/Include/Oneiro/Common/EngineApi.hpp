@@ -26,54 +26,49 @@ namespace oe
 		~EngineApi();
 
 		static bool Initialize(IApplication* application);
-		static bool Initialize(EngineApi* api);
-
 		static bool Shutdown();
 
 		static IApplication* GetApplication()
 		{
-			return m_Instance->application;
+			return GetInstance()->application;
 		}
 
 		static IWindowManager* GetWindowManager()
 		{
-			return m_Instance->windowManager;
+			return GetInstance()->windowManager;
 		}
 
 		static RHI::IRHI* GetRHI()
 		{
-			return m_Instance->rhi;
+			return GetInstance()->rhi;
 		}
 
 		static ModuleManager* GetModuleManager()
 		{
-			return m_Instance->moduleManager.get();
+			return GetInstance()->moduleManager.get();
 		}
 
 		static CVars* GetCVars()
 		{
-			return m_Instance->cVars.get();
+			return GetInstance()->cVars.get();
 		}
 
 		static WorldManager* GetWorldManager()
 		{
-			return m_Instance->worldManager.get();
+			return GetInstance()->worldManager.get();
 		}
 
 		static AssetsManager* GetAssetsManager()
 		{
-			return m_Instance->assetsManager.get();
+			return GetInstance()->assetsManager.get();
 		}
 
 		static flecs::world* GetECS()
 		{
-			return m_Instance->ecs.get();
+			return GetInstance()->ecs.get();
 		}
 
-		static EngineApi* GetInstance()
-		{
-			return m_Instance;
-		}
+		static EngineApi* GetInstance();
 
 		IApplication* application{};
 		IWindowManager* windowManager{};
@@ -87,6 +82,11 @@ namespace oe
 
 	private:
 		inline static EngineApi* m_Instance{};
-		bool m_IsOwner{true};
 	};
 } // namespace oe
+
+using CGetInstanceFunc = ::oe::EngineApi* (*)();
+inline __declspec(dllexport) ::oe::EngineApi* CGetEngineApi()
+{
+	return ::oe::EngineApi::GetInstance();
+}
