@@ -7,6 +7,22 @@
 
 #include "Oneiro/Common/EngineApi.hpp"
 
+#include <CompilerGlsl/compileGlsl.hpp>
+#include <ShaderAST/Var/Variable.hpp>
+#include <ShaderAST/Visitors/SelectEntryPoint.hpp>
+#include <ShaderWriter/BaseTypes/Sampler.hpp>
+#include <ShaderWriter/BaseTypes/StorageImage.hpp>
+#include <ShaderWriter/CompositeTypes/IOStructHelper.hpp>
+#include <ShaderWriter/CompositeTypes/IOStructInstanceHelper.hpp>
+#include <ShaderWriter/CompositeTypes/MixedStructInstanceHelper.hpp>
+#include <ShaderWriter/CompositeTypes/PushConstantBuffer.hpp>
+#include <ShaderWriter/Intrinsics/Intrinsics.hpp>
+#include <ShaderWriter/MeshWriterNV.hpp>
+#include <ShaderWriter/Source.hpp>
+#include <ShaderWriter/TaskWriterNV.hpp>
+#include <ShaderWriter/Writer.hpp>
+#include <ShaderWriter/WriterDebug.hpp>
+
 namespace oe
 {
 	struct Vertex
@@ -14,35 +30,73 @@ namespace oe
 		glm::vec2 vertPos{};
 	};
 
+	template <sdw::var::Flag FlagT>
+	using VertexStructT = sdw::MixedStructInstanceHelperT<FlagT, "VertexStruct", sdw::type::MemoryLayout::eStd430, sdw::IOVec3Field<"position", 0u>>;
+
+	template <sdw::var::Flag FlagT>
+	struct VertexStruct : public VertexStructT<FlagT>
+	{
+		VertexStruct(sdw::ShaderWriter& writer, sdw::expr::ExprPtr expr, bool enabled = true) : VertexStructT<FlagT>{writer, std::move(expr), enabled}
+		{
+		}
+
+		[[nodiscard]] auto position() const
+		{
+			return this->template getMember<"position">();
+		}
+	};
+
+	template <sdw::var::Flag FlagT>
+	using ColorStructT =
+		sdw::MixedStructInstanceHelperT<FlagT, "ColorStruct", sdw::type::MemoryLayout::eStd430, sdw::IOStructFieldT<sdw::Vec4, "color", 0u>>;
+
+	template <sdw::var::Flag FlagT>
+	struct ColorStruct : public ColorStructT<FlagT>
+	{
+		ColorStruct(sdw::ShaderWriter& writer, sdw::expr::ExprPtr expr, bool enabled = true) : ColorStructT<FlagT>{writer, std::move(expr), enabled}
+		{
+		}
+
+		[[nodiscard]] auto color() const
+		{
+			return this->template getMember<"color">();
+		}
+	};
+
 	class Renderer2D
 	{
 	public:
 		static void Initialize()
 		{
-			const char* gVertexSource = R"(
-                #version 460 core
-                layout(location = 0) in vec2 aPos;
-                layout(location = 0) out vec2 Pos;
-                void main()
-                {
-                    Pos = aPos;
-                      gl_Position = vec4(aPos, 0.0, 1.0);
-                }
-            )";
-			const char* gFragmentSource = R"(
-                #version 460 core
-                layout(location = 0) out vec4 oColor;
-                layout(location = 0) in vec2 Pos;
-                void main()
-                {
-                    oColor = vec4(Pos, 0.0, 1.0);
-                }
-            )";
 			data = CreateRef<Data>();
-			auto vert = EngineApi::GetRHI()->CreateShader(RHI::EShaderStage::VERTEX, gVertexSource);
-			auto frag = EngineApi::GetRHI()->CreateShader(RHI::EShaderStage::FRAGMENT, gFragmentSource);
-			data->graphicsPipeline = EngineApi::GetRHI()->CreateGraphicsPipeline({.vertexShader = vert.get(),
-																				  .fragmentShader = frag.get(),
+
+			Ref<RHI::IShader> vertexShader{};
+			Ref<RHI::IShader> fragmentShader{};
+
+			{
+				sdw::VertexWriter vertexShaderWriter;
+				vertexShaderWriter.implementMainT<VertexStruct, sdw::VoidT>([&](const sdw::VertexInT<VertexStruct>& in, sdw::VertexOut out) {
+					out.vtx.position = vec4(in.position(), 1.0_f);
+				});
+
+				glsl::GlslConfig vertexConfig{.shaderStage = sdw::ShaderStage::eVertex};
+				auto src = glsl::compileGlsl(vertexShaderWriter.getShader(), sdw::SpecialisationInfo{}, vertexConfig);
+				vertexShader = EngineApi::GetRHI()->CreateShader(RHI::EShaderStage::VERTEX, src);
+			}
+
+			{
+				sdw::FragmentWriter fragmentShaderWriter;
+				fragmentShaderWriter.implementMainT<sdw::VoidT, ColorStruct>([&](const sdw::FragmentIn& in, sdw::FragmentOutT<ColorStruct> out) {
+					out.color() = vec4(1.0_f, 1.0_f, 1.0_f, 1.0_f);
+				});
+
+				glsl::GlslConfig fragmentConfig{.shaderStage = sdw::ShaderStage::eFragment};
+				auto src = glsl::compileGlsl(fragmentShaderWriter.getShader(), sdw::SpecialisationInfo{}, fragmentConfig);
+				fragmentShader = EngineApi::GetRHI()->CreateShader(RHI::EShaderStage::FRAGMENT, src);
+			}
+
+			data->graphicsPipeline = EngineApi::GetRHI()->CreateGraphicsPipeline({.vertexShader = vertexShader.get(),
+																				  .fragmentShader = fragmentShader.get(),
 																				  .vertexInputState = {{RHI::VertexInputBindingDescription{
 																					  .location = 0,
 																					  .binding = 0,

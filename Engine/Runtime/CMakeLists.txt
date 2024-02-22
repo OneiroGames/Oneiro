@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(Oneiro-Engine)
 
 cmake_policy(SET CMP0079 NEW)
+set(SDW_BUILD_STATIC BOOL ON)
 
 find_package(glm CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -13,6 +14,9 @@ find_package(imguizmo CONFIG REQUIRED)
 find_package(nameof CONFIG REQUIRED)
 find_package(xxHash CONFIG REQUIRED)
 find_package(RapidJSON CONFIG REQUIRED)
+
+add_subdirectory(./ThirdParty/ShaderWriter)
+target_compile_definitions(ShaderWriter PUBLIC SDW_EnableStructHelper=1)
 
 file(GLOB ONEIRO_COMMON_PCH_FILES
         "Include/Common/Common.hpp"
@@ -53,7 +57,7 @@ file(GLOB ONEIRO_RENDERING_SOURCE_FILES
 
 add_library(Oneiro-Rendering SHARED ${ONEIRO_RENDERING_SOURCE_FILES})
 target_include_directories(Oneiro-Rendering PUBLIC "Include/")
-target_link_libraries(Oneiro-Rendering PUBLIC Oneiro-Common imgui::imgui imguizmo::imguizmo)
+target_link_libraries(Oneiro-Rendering PUBLIC Oneiro-Common imgui::imgui imguizmo::imguizmo sdw::ShaderWriter sdw::ShaderAST sdw::GlslCommon sdw::CompilerGlsl sdw::CompilerHlsl)
 set_target_properties(Oneiro-Rendering
         PROPERTIES
         CXX_STANDARD 23
