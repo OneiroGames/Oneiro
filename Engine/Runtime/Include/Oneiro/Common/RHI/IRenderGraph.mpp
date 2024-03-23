@@ -1,0 +1,28 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.RHI.IRenderGraph;
+
+import Oneiro.Common.RHI.Defines;
+
+import <functional>;
+
+export namespace oe::RHI
+{
+	class OE_API IRenderGraph
+	{
+	public:
+		virtual ~IRenderGraph() = default;
+
+		virtual void Begin(const RenderGraphBeginInfo& beginInfo, const std::function<void(ICommandBuffer*)>& func) = 0;
+		virtual void End() = 0;
+		virtual void AddGraphicsPass(const std::function<void(ICommandBuffer*)>& func, const PassInfo& info) = 0;
+		virtual void AddComputePass(const std::function<void(ICommandBuffer*)>& func, const PassInfo& info) = 0;
+	};
+} // namespace oe::RHI

@@ -1,0 +1,26 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.FileSystem.Base;
+
+export import Oneiro.Common.FileSystem.Path;
+
+export namespace oe::FileSystem
+{
+	OE_API void Init();
+	OE_API void Shutdown();
+
+	OE_API void Mount(const Path& path, const std::string& mountPoint = "");
+	OE_API void UnMount(const Path& path);
+
+	OE_API std::string Read(const Path& path);
+	OE_API void Write(const Path& path, const uint8_t* data, size_t size);
+
+	OE_API [[nodiscard]] bool IsInitialized() noexcept;
+} // namespace oe::FileSystem

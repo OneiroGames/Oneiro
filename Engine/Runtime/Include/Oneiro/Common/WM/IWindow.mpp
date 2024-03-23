@@ -1,0 +1,184 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "glm/glm.hpp"
+
+export module Oneiro.Common.WM.IWindow;
+
+import <utility>;
+
+export namespace oe
+{
+	struct OE_API SWindowProperties
+	{
+		std::string title{};
+		int32_t width{}, height{};
+		glm::i32vec2 position{};
+	};
+
+	struct OE_API SWindowHandleData
+	{
+		void* wnd{};
+		void* inst{};
+		void* userdata{};
+		void* procAddress{};
+	};
+
+	namespace Input
+	{
+		enum class EKey
+		{
+			NONE = 0,
+			A = 4,
+			B = 5,
+			C = 6,
+			D = 7,
+			E = 8,
+			F = 9,
+			G = 10,
+			H = 11,
+			I = 12,
+			J = 13,
+			K = 14,
+			L = 15,
+			M = 16,
+			N = 17,
+			O = 18,
+			P = 19,
+			Q = 20,
+			R = 21,
+			S = 22,
+			T = 23,
+			U = 24,
+			V = 25,
+			W = 26,
+			X = 27,
+			Y = 28,
+			Z = 29,
+
+			//        1 = 30,
+			//        2 = 31,
+			//        3 = 32,
+			//        4 = 33,
+			//        5 = 34,
+			//        6 = 35,
+			//        7 = 36,
+			//        8 = 37,
+			//        9 = 38,
+			//        0 = 39,
+
+			RETURN = 40,
+			ESCAPE = 41,
+			BACKSPACE = 42,
+			TAB = 43,
+			SPACE = 44,
+
+			MINUS = 45,
+			EQUALS = 46,
+			LEFTBRACKET = 47,
+			RIGHTBRACKET = 48,
+			BACKSLASH = 49,
+			NONUSHASH = 50,
+			SEMICOLON = 51,
+			APOSTROPHE = 52,
+			GRAVE = 53,
+			COMMA = 54,
+			PERIOD = 55,
+			SLASH = 56,
+
+			CAPSLOCK = 57,
+
+			F1 = 58,
+			F2 = 59,
+			F3 = 60,
+			F4 = 61,
+			F5 = 62,
+			F6 = 63,
+			F7 = 64,
+			F8 = 65,
+			F9 = 66,
+			F10 = 67,
+			F11 = 68,
+			F12 = 69,
+
+			PRINTSCREEN = 70,
+			SCROLLLOCK = 71,
+			PAUSE = 72,
+			INSERT = 73,
+			HOME = 74,
+			PAGEUP = 75,
+			DEL = 76,
+			END = 77,
+			PAGEDOWN = 78,
+			RIGHT = 79,
+			LEFT = 80,
+			DOWN = 81,
+			UP = 82,
+
+			LCTRL = 224,
+			LSHIFT = 225,
+			LALT = 226,
+			LGUI = 227,
+			RCTRL = 228,
+			RSHIFT = 229,
+			RALT = 230, /**< alt gr, option */
+			RGUI = 231
+		};
+
+		enum class EButton
+		{
+			NONE = 0,
+			LEFT = 1,
+			MIDDLE = 2,
+			RIGHT = 3,
+			X1 = 4,
+			X2 = 5
+		};
+
+		enum class EAction
+		{
+			NONE = 0,
+			PRESS,
+			RELEASE
+		};
+	} // namespace Input
+
+	class OE_API IWindow
+	{
+	public:
+		virtual ~IWindow() = default;
+
+		explicit IWindow(SWindowProperties properties) : m_Properties(std::move(properties)) {}
+
+		virtual void Create() = 0;
+		virtual void CreateContext() = 0;
+		virtual void Update() = 0;
+		virtual void PollEvents() = 0;
+		virtual void Close() = 0;
+		virtual void Destroy() = 0;
+
+		virtual SWindowHandleData GetWindowHandleData() = 0;
+		virtual glm::i32vec2 GetSize() = 0;
+
+		float GetAspectRatio()
+		{
+			const auto size = GetSize();
+			return static_cast<float>(size.x) / static_cast<float>(size.y);
+		}
+
+		[[nodiscard]] bool IsActive() const
+		{
+			return m_IsActive;
+		}
+
+	protected:
+		SWindowProperties m_Properties{};
+		bool m_IsActive{true};
+	};
+} // namespace oe

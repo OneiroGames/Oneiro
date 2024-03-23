@@ -1,0 +1,79 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.RHI.ITexture;
+
+import Oneiro.Common.RHI.Defines;
+
+export namespace oe::RHI
+{
+	class OE_API ITexture
+	{
+	public:
+		virtual void Create(const TextureCreateInfo& createInfo, std::string_view name = "") = 0;
+		ITexture(ITexture&& old) noexcept = default;
+		ITexture& operator=(ITexture&& old) noexcept = default;
+		ITexture(const ITexture&) = delete;
+		ITexture& operator=(const ITexture&) = delete;
+		virtual ~ITexture() = default;
+
+		virtual void UpdateImage(const TextureUpdateInfo& info) = 0;
+		virtual void UpdateCompressedImage(const CompressedTextureUpdateInfo& info) = 0;
+		virtual void ClearImage(const TextureClearInfo& info) = 0;
+		virtual void GenMipmaps() = 0;
+
+		[[nodiscard]] virtual Ref<ITextureView> CreateSingleMipView(uint32_t level) = 0;
+		[[nodiscard]] virtual Ref<ITextureView> CreateSingleLayerView(uint32_t layer) = 0;
+		[[nodiscard]] virtual Ref<ITextureView> CreateFormatView(Format newFormat) = 0;
+		[[nodiscard]] virtual Ref<ITextureView> CreateSwizzleView(ComponentMapping components) = 0;
+
+		[[nodiscard]] const TextureCreateInfo& GetCreateInfo() const noexcept
+		{
+			return m_CreateInfo;
+		}
+
+		[[nodiscard]] Extent3D Extent() const noexcept
+		{
+			return m_CreateInfo.extent;
+		}
+
+	protected:
+		ITexture() = default;
+
+		TextureCreateInfo m_CreateInfo{};
+	};
+
+	class OE_API ITextureView : public ITexture
+	{
+	public:
+		using ITexture::ITexture;
+
+		virtual void Create(const TextureViewCreateInfo& viewInfo, ITexture& texture, std::string_view name = "") = 0;
+		virtual void Create(const TextureViewCreateInfo& viewInfo, ITextureView& textureView, std::string_view name = "") = 0;
+		virtual void Create(ITexture& texture, std::string_view name = "") = 0;
+
+		[[nodiscard]] TextureViewCreateInfo GetViewInfo() const noexcept
+		{
+			return m_ViewInfo;
+		}
+
+	private:
+		TextureViewCreateInfo m_ViewInfo{};
+	};
+
+	/// @brief Encapsulates an OpenGL sampler
+	class OE_API ITextureSampler
+	{
+	public:
+		virtual void Create(const SamplerState& samplerState) = 0;
+
+	private:
+		ITextureSampler() = default;
+	};
+} // namespace oe::RHI

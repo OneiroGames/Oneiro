@@ -1,6 +1,0 @@
-[submodule "Engine/Modules/RHI-GL/ThirdParty/fwog"]
-	path = Engine/Modules/RHI-GL/ThirdParty/fwog
-	url = https://github.com/OneiroGames/fwog
-[submodule "Engine/Runtime/ThirdParty/ShaderWriter"]
-	path = Engine/Runtime/ThirdParty/ShaderWriter
-	url = https://github.com/DragonJoker/ShaderWriter/

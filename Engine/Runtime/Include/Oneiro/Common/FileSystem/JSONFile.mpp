@@ -1,0 +1,54 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.FileSystem.JSONFile;
+
+import Oneiro.Common.FileSystem.Base;
+
+import <rapidjson/document.h>;
+import <rapidjson/rapidjson.h>;
+
+export namespace oe::FileSystem
+{
+	class OE_API JSONFile
+	{
+	public:
+		JSONFile() = default;
+
+		JSONFile(Path path);
+
+		~JSONFile();
+
+		bool LoadFromData(const std::string& data);
+
+		bool Open(const Path& path);
+
+		bool Save();
+
+		bool Save(const Path& path);
+
+		auto& operator[](const std::string& key)
+		{
+			return m_File[key.c_str()];
+		}
+
+		bool Has(const std::string& key)
+		{
+			return m_File.HasMember(key.c_str());
+		}
+
+		const Path& GetPath() const
+		{
+			return m_Path;
+		}
+	private:
+		rapidjson::Document m_File{};
+		Path m_Path{};
+	};
+} // namespace oe::FileSystem

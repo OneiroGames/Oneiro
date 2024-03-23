@@ -3,7 +3,11 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/RHI/IBuffer.hpp"
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+module Oneiro.Common.RHI.IBuffer;
 
 namespace oe::RHI
 {

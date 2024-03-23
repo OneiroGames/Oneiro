@@ -3,11 +3,16 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/FileSystem/FileSystem.hpp"
+module;
 
-#include "Oneiro/Common/FileSystem/Path.hpp"
+#include "Oneiro/Common/StdAfx.hpp"
 
 #include "physfs.h"
+
+module Oneiro.Common.FileSystem.Base;
+
+import Oneiro.Common.FileSystem.Path;
+
 namespace oe::FileSystem
 {
 	void Init()
@@ -33,14 +38,12 @@ namespace oe::FileSystem
 
 	std::string Read(const Path& path)
 	{
-		std::string pathString = path.string();
-		std::replace(pathString.begin(), pathString.end(), '\\', '/');
-
-		if (!FileSystem::IsExists(pathString))
+		auto p = FileSystem::FixSeparator(path);
+		if (!FileSystem::IsExists(p))
 		{
 			return {};
 		}
-		const auto& file = PHYSFS_openRead(pathString.c_str());
+		const auto& file = PHYSFS_openRead(p.string().c_str());
 		if (file)
 		{
 			std::string data{};
@@ -55,11 +58,10 @@ namespace oe::FileSystem
 
 	void Write(const Path& path, const uint8_t* data, size_t size)
 	{
-		std::string pathString = path.string();
-		std::replace(pathString.begin(), pathString.end(), '\\', '/');
+		auto p = FileSystem::FixSeparator(path);
 
 		PHYSFS_setWriteDir(PHYSFS_getBaseDir());
-		const auto& file = PHYSFS_openWrite(pathString.c_str());
+		const auto& file = PHYSFS_openWrite(p.string().c_str());
 		if (file)
 		{
 			PHYSFS_writeBytes(file, data, size);

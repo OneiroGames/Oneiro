@@ -1,0 +1,50 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.RHI.ICommandBuffer;
+
+import Oneiro.Common.RHI.Defines;
+
+export namespace oe::RHI
+{
+	class OE_API ICommandBuffer
+	{
+	public:
+		virtual ~ICommandBuffer() = default;
+		virtual void BindGraphicsPipeline(const Ref<IGraphicsPipeline>& pipeline) = 0;
+		virtual void BindComputePipeline(const Ref<IComputePipeline>& pipeline) = 0;
+		virtual void SetViewport(const Viewport& viewport) = 0;
+		virtual void SetScissor(const Rect2D& scissor) = 0;
+		virtual void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
+		virtual void DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) = 0;
+		virtual void DrawIndirect(const Ref<IBuffer>& commandBuffer, uint64_t commandBufferOffset, uint32_t drawCount, uint32_t stride) = 0;
+		virtual void DrawIndirectCount(const Ref<IBuffer>& commandBuffer, uint64_t commandBufferOffset, const Ref<IBuffer>& countBuffer,
+									   uint64_t countBufferOffset, uint32_t maxDrawCount, uint32_t stride) = 0;
+		virtual void DrawIndexedIndirect(const Ref<IBuffer>& commandBuffer, uint64_t commandBufferOffset, uint32_t drawCount, uint32_t stride) = 0;
+		virtual void DrawIndexedIndirectCount(const Ref<IBuffer>& commandBuffer, uint64_t commandBufferOffset, const Ref<IBuffer>& countBuffer,
+											  uint64_t countBufferOffset, uint32_t maxDrawCount, uint32_t stride) = 0;
+		virtual void BindVertexBuffer(uint32_t bindingIndex, const Ref<IBuffer>& buffer, uint64_t offset, uint64_t stride) = 0;
+		virtual void BindIndexBuffer(const Ref<IBuffer>& buffer, IndexType indexType) = 0;
+		virtual void BindUniformBuffer(uint32_t index, const Ref<IBuffer>& buffer, uint64_t offset = 0, uint64_t size = WHOLE_BUFFER) = 0;
+		virtual void BindUniformBuffer(std::string_view block, const Ref<IBuffer>& buffer, uint64_t offset = 0, uint64_t size = WHOLE_BUFFER) = 0;
+		virtual void BindStorageBuffer(uint32_t index, const Ref<IBuffer>& buffer, uint64_t offset = 0, uint64_t size = WHOLE_BUFFER) = 0;
+		virtual void BindStorageBuffer(std::string_view block, const Ref<IBuffer>& buffer, uint64_t offset = 0, uint64_t size = WHOLE_BUFFER) = 0;
+
+		//		void BindSampledImage(uint32_t index, const Ref<ITexture>& texture, const Sampler& sampler) = 0;
+		//		void BindSampledImage(std::string_view uniform, const Ref<ITexture>& texture, const Sampler& sampler) = 0;
+
+		virtual void BindImage(uint32_t index, const Ref<ITexture>& texture, uint32_t level) = 0;
+		virtual void BindImage(std::string_view uniform, const Ref<ITexture>& texture, uint32_t level) = 0;
+		virtual void Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
+		virtual void Dispatch(Extent3D groupCount) = 0;
+		virtual void DispatchInvocations(uint32_t invocationCountX, uint32_t invocationCountY, uint32_t invocationCountZ) = 0;
+		virtual void DispatchInvocations(Extent3D invocationCount) = 0;
+		virtual void DispatchIndirect(const Ref<IBuffer>& commandBuffer, uint64_t commandBufferOffset) = 0;
+	};
+} // namespace oe::RHI

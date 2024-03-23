@@ -3,9 +3,13 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/IApplication.hpp"
+module;
 
-#include <utility>
+#include "Oneiro/Common/StdAfx.hpp"
+
+module Oneiro.Common.IApplication;
+
+import <utility>;
 
 namespace oe
 {

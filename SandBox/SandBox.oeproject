@@ -1,7 +1,0 @@
-Project:
-  Name: SandBox
-  AssetsPath: Assets/
-  ShadersPath: Assets/Shaders/
-  WorldsPath: Assets/Worlds/
-  ImGuiFontPath: Fonts/arial.ttf
-  StartWorldPath: test.oeworld

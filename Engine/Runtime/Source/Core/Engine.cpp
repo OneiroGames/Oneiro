@@ -3,35 +3,44 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Core/Engine.hpp"
+module;
 
-#include "Oneiro/Common/FileSystem/FileSystem.hpp"
-#include "Oneiro/Common/IApplication.hpp"
-#include "Oneiro/Common/JobManager.hpp"
-#include "Oneiro/Common/ModuleManager.hpp"
-#include "Oneiro/Common/World/World.hpp"
-#include "Oneiro/Rendering/ImGui/ImGuiManager.hpp"
-#include "Oneiro/Rendering/Renderer2D.hpp"
+#include "Oneiro/Common/StdAfx.hpp"
+
+module Oneiro.Core.Engine;
+
+import Oneiro.Common.FileSystem.Base;
+import Oneiro.Common.IApplication;
+import Oneiro.Common.JobManager;
+import Oneiro.Common.ModuleManager;
+import Oneiro.Common.ECS.World;
+import Oneiro.Common.EngineApi;
+import Oneiro.Common.IModule;
+import Oneiro.Common.WM.IWindow;
+import Oneiro.Common.IApplication;
 
 namespace oe
 {
+	float Engine::m_DeltaTime = {};
+	bool Engine::m_IsRuntime = {};
+
 	void Engine::PreInit(IApplication* application)
 	{
-		JobManager::Initialize();
+		// JobManager::Initialize();
 
 		EngineApi::Initialize(application);
 
 		m_EngineApi = EngineApi::GetInstance();
 
 		FileSystem::Init();
-		FileSystem::Mount(".", "/");
+		FileSystem::Mount(FileSystem::Path{"."}, "/");
 
-		EngineApi::GetCVars()->Load("Engine", "/Configs/Engine.ini");
+		EngineApi::GetCVars()->Load("Engine", FileSystem::Path{"/Configs/Engine.ini"});
 	}
 
 	void Engine::Init()
 	{
-		EngineApi::GetModuleManager()->LoadModulesFromPath("Modules/");
+		EngineApi::GetModuleManager()->LoadModulesFromPath(FileSystem::Path{"Modules/"});
 
 		const auto& window = EngineApi::GetWindowManager()->CreatePlatformWindow(EngineApi::GetApplication()->GetProperties().windowProperties);
 
@@ -42,10 +51,9 @@ namespace oe
 
 		EngineApi::GetRHI()->Initialize(window);
 
-		EngineApi::GetApplication()->OnPreInitialize();
+		EngineApi::GetImGuiManager()->Initialize();
 
-		Renderer2D::Initialize();
-		ImGuiManager::Initialize(EngineApi::GetInstance());
+		EngineApi::GetApplication()->OnPreInitialize();
 
 		EngineApi::GetApplication()->OnInitialize();
 	}
@@ -69,9 +77,9 @@ namespace oe
 
 			EngineApi::GetApplication()->OnLogicUpdate(m_DeltaTime);
 
+			EngineApi::GetImGuiManager()->BeginFrame();
 			EngineApi::GetWorldManager()->GetWorld()->UpdateRuntime(m_DeltaTime);
-
-			Renderer2D::Draw();
+			EngineApi::GetImGuiManager()->EndFrame();
 
 			window->Update();
 		}
@@ -82,15 +90,14 @@ namespace oe
 	void Engine::Shutdown()
 	{
 		EngineApi::GetApplication()->OnShutdown();
-		oe::EngineApi::GetAssetsManager()->CollectGarbage();
-		Renderer2D::Shutdown();
-		ImGuiManager::Shutdown();
+		EngineApi::GetAssetsManager()->CollectGarbage();
 		EngineApi::GetCVars()->Save();
+		EngineApi::GetImGuiManager()->Shutdown();
 		EngineApi::GetRHI()->Shutdown();
 		EngineApi::GetWindowManager()->GetPlatformWindow(0)->Destroy();
 		EngineApi::GetWindowManager()->Shutdown();
 		EngineApi::Shutdown();
-		JobManager::Shutdown();
+		// JobManager::Shutdown();
 	}
 
 	float Engine::GetDeltaTime() noexcept
