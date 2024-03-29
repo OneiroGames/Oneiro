@@ -4,3 +4,4 @@ build/
 bin/
 vsxmake2022/
 *.ifc
+.vscode/compile_commands.json

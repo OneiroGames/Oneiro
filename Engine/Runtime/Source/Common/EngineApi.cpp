@@ -7,6 +7,9 @@ module;
 
 #include "Oneiro/Common/StdAfx.hpp"
 
+#include "slang.h"
+#include "slang-com-ptr.h"
+
 module Oneiro.Common.EngineApi;
 
 import Oneiro.Common.ModuleManager;
@@ -27,26 +30,30 @@ namespace oe
 
 	EngineApi::~EngineApi()
 	{
+		slangGlobalSession->Release();
+		imguiManager.reset();
+		rhi.reset();
+		windowManager.reset();
+		assetsManager.reset();
+		worldManager.reset();
 		moduleManager.reset();
 		cVars.reset();
+		logger.reset();
 		ecs.reset();
-		worldManager.reset();
-		assetsManager.reset();
-		imguiManager.reset();
-        logger.reset();
 	}
 
 	bool EngineApi::Initialize(IApplication* application)
 	{
 		m_Instance = new EngineApi();
 		m_Instance->application = application;
-		m_Instance->moduleManager = CreateRef<ModuleManager>();
-		m_Instance->cVars = CreateRef<CVars>();
 		m_Instance->ecs = CreateRef<flecs::world>();
+		m_Instance->logger = CreateRef<Logger>();
+		m_Instance->cVars = CreateRef<CVars>();
+		m_Instance->moduleManager = CreateRef<ModuleManager>();
 		m_Instance->worldManager = CreateRef<WorldManager>();
 		m_Instance->assetsManager = CreateRef<AssetsManager>();
 		m_Instance->imguiManager = CreateRef<ImGuiManager>();
-        m_Instance->logger = CreateRef<Logger>();
+		slang::createGlobalSession(m_Instance->slangGlobalSession.writeRef());
 		return true;
 	}
 

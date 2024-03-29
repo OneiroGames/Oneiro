@@ -18,6 +18,10 @@ import Oneiro.Common.EngineApi;
 import Oneiro.Common.IModule;
 import Oneiro.Common.WM.IWindow;
 import Oneiro.Common.IApplication;
+import Oneiro.Common.RHI.ShaderCompiler;
+import Oneiro.Common.CVars;
+import Oneiro.RHI.OpenGL460;
+import Oneiro.WM.SDL2;
 
 namespace oe
 {
@@ -35,13 +39,27 @@ namespace oe
 		FileSystem::Init();
 		FileSystem::Mount(FileSystem::Path{"."}, "/");
 
-		EngineApi::GetCVars()->Load("Engine", FileSystem::Path{"/Configs/Engine.ini"});
+		RHI::ShaderCompiler::Initialize();
+
+		EngineApi::GetCVars()->Load("Engine", FileSystem::Path{"/Configs/Engine.json"});
+		EngineApi::GetCVars()->Load("Game", FileSystem::Path{"/Configs/Game.json"});
 	}
 
 	void Engine::Init()
 	{
-		EngineApi::GetModuleManager()->LoadModulesFromPath(FileSystem::Path{"Modules/"});
+		const auto& preferredWM = EngineApi::GetCVars()->GetString("Game", "WM_WIN64");
+		const auto& preferredRHI = EngineApi::GetCVars()->GetString("Game", "RHI");
 
+		if (preferredWM == "SDL2")
+		{
+			EngineApi::GetInstance()->windowManager = CreateRef<SDL2WM>();
+		}
+
+		if (preferredRHI == "OpenGL460")
+		{
+			EngineApi::GetInstance()->rhi = CreateRef<OpenGL460RHI>();
+		}
+		
 		const auto& window = EngineApi::GetWindowManager()->CreatePlatformWindow(EngineApi::GetApplication()->GetProperties().windowProperties);
 
 		EngineApi::GetRHI()->PreInitialize();
@@ -52,6 +70,8 @@ namespace oe
 		EngineApi::GetRHI()->Initialize(window);
 
 		EngineApi::GetImGuiManager()->Initialize();
+
+		EngineApi::GetModuleManager()->LoadModules();
 
 		EngineApi::GetApplication()->OnPreInitialize();
 
@@ -65,13 +85,12 @@ namespace oe
 		const auto& window = EngineApi::GetWindowManager()->GetPlatformWindow(0);
 
 		float lastFrame{};
-		float currentFrame{};
 
 		while (window->IsActive())
 		{
 			window->PollEvents();
 
-			currentFrame = EngineApi::GetWindowManager()->GetTime();
+			float currentFrame = EngineApi::GetWindowManager()->GetTime();
 			m_DeltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
 
@@ -90,14 +109,15 @@ namespace oe
 	void Engine::Shutdown()
 	{
 		EngineApi::GetApplication()->OnShutdown();
+		EngineApi::GetModuleManager()->UnLoadModules();
 		EngineApi::GetAssetsManager()->CollectGarbage();
-		EngineApi::GetCVars()->Save();
 		EngineApi::GetImGuiManager()->Shutdown();
 		EngineApi::GetRHI()->Shutdown();
 		EngineApi::GetWindowManager()->GetPlatformWindow(0)->Destroy();
 		EngineApi::GetWindowManager()->Shutdown();
+		RHI::ShaderCompiler::Shutdown();
+		EngineApi::GetCVars()->Save();
 		EngineApi::Shutdown();
-		// JobManager::Shutdown();
 	}
 
 	float Engine::GetDeltaTime() noexcept

@@ -7,6 +7,9 @@ module;
 
 #include "Oneiro/Common/StdAfx.hpp"
 
+#include "slang.h"
+#include "slang-com-ptr.h"
+
 export module Oneiro.Common.EngineApi;
 
 import Oneiro.Common.ModuleManager;
@@ -39,12 +42,12 @@ export namespace oe
 
 		static IWindowManager* GetWindowManager()
 		{
-			return GetInstance()->windowManager;
+			return GetInstance()->windowManager.get();
 		}
 
 		static RHI::IRHI* GetRHI()
 		{
-			return GetInstance()->rhi;
+			return GetInstance()->rhi.get();
 		}
 
 		static ModuleManager* GetModuleManager()
@@ -82,11 +85,16 @@ export namespace oe
 			return GetInstance()->logger.get();
 		}
 
+		static const Slang::ComPtr<slang::IGlobalSession>& GetSlangGlobalSession()
+		{
+			return GetInstance()->slangGlobalSession;
+		}
+
 		static EngineApi* GetInstance();
 
 		IApplication* application{};
-		IWindowManager* windowManager{};
-		RHI::IRHI* rhi{};
+		Ref<IWindowManager> windowManager{};
+		Ref<RHI::IRHI> rhi{};
 
 		Ref<ModuleManager> moduleManager{};
 		Ref<CVars> cVars{};
@@ -95,6 +103,8 @@ export namespace oe
 		Ref<flecs::world> ecs{};
 		Ref<ImGuiManager> imguiManager{};
 		Ref<Logger> logger{};
+
+		Slang::ComPtr<slang::IGlobalSession> slangGlobalSession;
 
 	private:
 		static EngineApi* m_Instance;

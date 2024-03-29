@@ -12,7 +12,7 @@ module Oneiro.Common.AssetsProviders.WorldAsset;
 import Oneiro.Common.AssetsProvider;
 import Oneiro.Common.ECS.World;
 import Oneiro.Common.EngineApi;
-// import Oneiro.Common.Logger;
+import Oneiro.Common.Logger;
 
 import <execution>;
 
@@ -38,7 +38,7 @@ void oe::WorldAssetsProvider::LoadAsset(const Ref<IAsset>& asset, bool async)
 	const auto& path = get<0>(*assetData);
 	asset->nativePtr = EngineApi::GetWorldManager()->LoadWorld(path);
 	// if (!asset->nativePtr)
-		// OE_CORE_WARN("Failed to load world from '{}' asset hash!", assetInfo->GetHash());
+		OE_CORE_WARN("Failed to load world from '{}' asset hash!", assetInfo->GetHash());
 }
 
 void oe::WorldAssetsProvider::LoadAssetsAsync()
@@ -55,7 +55,7 @@ void oe::WorldAssetsProvider::LoadAssetsAsync()
 			const auto& path = get<0>(*assetData);
 			item->nativePtr = EngineApi::GetWorldManager()->LoadWorld(path);
 			// if (!item->nativePtr)
-				// OE_CORE_WARN("Failed to load world from '{}' asset hash!", assetInfo->GetHash());
+				OE_CORE_WARN("Failed to load world from '{}' asset hash!", assetInfo->GetHash());
 		}));
 	});
 

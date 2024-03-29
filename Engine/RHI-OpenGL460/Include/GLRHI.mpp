@@ -7,9 +7,6 @@ module;
 
 #include "Oneiro/Common/StdAfx.hpp"
 
-#include "glad/gl.h"
-#include "imgui_impl_opengl3.h"
-
 #include "Fwog/Buffer.h"
 #include "Fwog/Context.h"
 #include "Fwog/Pipeline.h"
@@ -17,9 +14,8 @@ module;
 #include "Fwog/Shader.h"
 #include "Fwog/Texture.h"
 
-export module Oneiro.Module.RHI.GL;
+export module Oneiro.RHI.OpenGL460;
 
-import Oneiro.Common.IModule;
 import Oneiro.Common.RHI.Base;
 import Oneiro.Common.EngineApi;
 
@@ -426,7 +422,7 @@ export namespace oe
 		std::function<void(RHI::ICommandBuffer*)> renderFunc{};
 	};
 
-	class GLRHI : public RHI::IRHI
+	class OE_API OpenGL460RHI : public RHI::IRHI
 	{
 	public:
 		using IRHI::IRHI;
@@ -448,18 +444,5 @@ export namespace oe
 		bool BeginImGuiFrame() override;
 		bool EndImGuiFrame() override;
 		bool ShutdownImGui() override;
-	};
-
-	class GLRHIEngineModule : public IModule
-	{
-	public:
-		using IModule::IModule;
-
-		bool Initialize() override;
-
-		bool Shutdown() override;
-
-	private:
-		Ref<GLRHI> m_RHI{};
 	};
 } // namespace oe

@@ -17,9 +17,8 @@ module;
 #include "Fwog/Shader.h"
 #include "Fwog/Texture.h"
 
-module Oneiro.Module.RHI.GL;
+module Oneiro.RHI.OpenGL460;
 
-import Oneiro.Common.IModule;
 import Oneiro.Common.RHI.Base;
 import Oneiro.Common.EngineApi;
 
@@ -353,117 +352,93 @@ namespace oe
 
 	void RenderGraph::AddComputePass(const std::function<void(RHI::ICommandBuffer*)>& func, const RHI::PassInfo& info) {}
 
-	bool GLRHI::PreInitialize()
+	bool OpenGL460RHI::PreInitialize()
 	{
-		m_RHIType = RHI::ERHIType::GL;
+		m_RHIType = RHI::ERHIType::OPENGL460;
 		return true;
 	}
 
-	bool GLRHI::Initialize(IWindow* window)
+	bool OpenGL460RHI::Initialize(IWindow* window)
 	{
 		gladLoadGL(static_cast<GLADloadfunc>(window->GetWindowHandleData().procAddress));
 		Fwog::Initialize();
 		return true;
 	}
 
-	bool GLRHI::Shutdown()
+	bool OpenGL460RHI::Shutdown()
 	{
 		fwog::Terminate();
 		return true;
 	}
 
-	Ref<RHI::IShader> GLRHI::CreateShader(RHI::EShaderStage shaderStage, const std::string& source)
+	Ref<RHI::IShader> OpenGL460RHI::CreateShader(RHI::EShaderStage shaderStage, const std::string& source)
 	{
 		auto shader = CreateRef<Shader>();
 		shader->Load(shaderStage, source);
 		return shader;
 	}
 
-	Ref<RHI::IBuffer> GLRHI::CreateBuffer(const void* data, size_t size, RHI::BufferStorageFlags storageFlags, std::string_view name)
+	Ref<RHI::IBuffer> OpenGL460RHI::CreateBuffer(const void* data, size_t size, RHI::BufferStorageFlags storageFlags, std::string_view name)
 	{
 		auto buffer = CreateRef<Buffer>();
 		buffer->Create(data, size, storageFlags, name);
 		return buffer;
 	}
 
-	Ref<RHI::IGraphicsPipeline> GLRHI::CreateGraphicsPipeline(const RHI::GraphicsPipelineInfo& info)
+	Ref<RHI::IGraphicsPipeline> OpenGL460RHI::CreateGraphicsPipeline(const RHI::GraphicsPipelineInfo& info)
 	{
 		auto pipeline = CreateRef<GraphicsPipeline>();
 		pipeline->Create(info);
 		return pipeline;
 	}
 
-	Ref<RHI::IComputePipeline> GLRHI::CreateComputePipeline(const RHI::ComputePipelineInfo& info)
+	Ref<RHI::IComputePipeline> OpenGL460RHI::CreateComputePipeline(const RHI::ComputePipelineInfo& info)
 	{
 		auto pipeline = CreateRef<ComputePipeline>();
 		pipeline->Create(info);
 		return pipeline;
 	}
 
-	Ref<RHI::IRenderGraph> GLRHI::CreateRenderGraph()
+	Ref<RHI::IRenderGraph> OpenGL460RHI::CreateRenderGraph()
 	{
 		auto renderPass = CreateRef<RenderGraph>();
 		return renderPass;
 	}
 
-	Ref<RHI::ITexture> GLRHI::CreateTexture(const RHI::TextureCreateInfo& createInfo, std::string_view name)
+	Ref<RHI::ITexture> OpenGL460RHI::CreateTexture(const RHI::TextureCreateInfo& createInfo, std::string_view name)
 	{
 		auto texture = CreateRef<Texture>();
 		texture->Create(createInfo, name);
 		return texture;
 	}
 
-	Ref<RHI::ITextureSampler> GLRHI::CreateTextureSampler(const RHI::SamplerState& samplerState)
+	Ref<RHI::ITextureSampler> OpenGL460RHI::CreateTextureSampler(const RHI::SamplerState& samplerState)
 	{
 		return {};
 	}
 
-	bool GLRHI::InitializeImGui()
+	bool OpenGL460RHI::InitializeImGui()
 	{
 		ImGui::SetCurrentContext(EngineApi::GetImGuiManager()->GetContext());
 		ImGui_ImplOpenGL3_Init("#version 460");
 		return true;
 	}
 
-	bool GLRHI::BeginImGuiFrame()
+	bool OpenGL460RHI::BeginImGuiFrame()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		return true;
 	}
 
-	bool GLRHI::EndImGuiFrame()
+	bool OpenGL460RHI::EndImGuiFrame()
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		return true;
 	}
 
-	bool GLRHI::ShutdownImGui()
+	bool OpenGL460RHI::ShutdownImGui()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
 		return true;
-	}
-
-	bool GLRHIEngineModule::Initialize()
-	{
-		m_RHI = CreateRef<GLRHI>();
-		EngineApi::GetInstance()->rhi = m_RHI.get();
-		return true;
-	}
-
-	bool GLRHIEngineModule::Shutdown()
-	{
-		EngineApi::GetInstance()->rhi = nullptr;
-		m_RHI.reset();
-		return true;
-	}
-
-	extern "C" OE_MODULE_API IModule* CreateModule()
-	{
-		return new oe::GLRHIEngineModule();
-	}
-
-	extern "C" OE_MODULE_API void DestroyModule(IModule* engineModule)
-	{
-		delete engineModule;
 	}
 } // namespace oe

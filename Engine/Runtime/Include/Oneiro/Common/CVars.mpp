@@ -39,8 +39,7 @@ export namespace oe
 			{
 				if (it->second->Has(key))
 					return it->second->operator[](key).GetString();
-				else
-					return defaultValue;
+				return defaultValue;
 			}
 			return defaultValue;
 		}

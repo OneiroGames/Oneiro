@@ -23,12 +23,24 @@ export namespace oe::FileSystem
 		template <class T>
 		T GetFunction(const std::string& name);
 
+		template <class T, class... Args>
+		auto CallFunction(const std::string& name, Args&&... args)
+		{
+			return GetFunction<T>(name)(args...);
+		}
+
 		void Close();
+
+		const std::string& GetPath() const
+		{
+			return m_Path;
+		}
 
 	private:
 #ifdef _WIN32
 		HMODULE m_Module{};
 #endif
+		std::string m_Path{};
 	};
 
 	template <class T>

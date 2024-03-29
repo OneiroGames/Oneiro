@@ -7,7 +7,7 @@ module;
 
 #include "Oneiro/Common/StdAfx.hpp"
 
-#include <nameof.hpp>
+#include <ranges>
 
 export module Oneiro.Common.ModuleManager;
 
@@ -25,31 +25,35 @@ export namespace oe
 	public:
 		ModuleManager() = default;
 
-		~ModuleManager()
-		{
-			UnLoadModules();
-		}
-
 		IModule* LoadModule(const FileSystem::Path& path, bool initialize = true)
 		{
-			auto& pair = m_Modules.emplace_back(std::pair<FileSystem::DynamicLibrary, IModule*>{{}, {}});
-			pair.first.Load(path.string());
-			pair.second = pair.first.GetFunction<CreateModuleFunc>("CreateModule")();
+			FileSystem::JSONFile configFile{m_ModulesPath / path / "module.json"};
+			if (HasModule(configFile["Name"].GetString()))
+				return {};
+			
+			auto& moduleData = m_Modules.emplace_back(SModuleData{});
+
+			moduleData.dynamicLibrary.Load((m_ModulesPath / path / FileSystem::Path{configFile["EntryPoint"].GetString()}).string());
+			moduleData.module = moduleData.dynamicLibrary.CallFunction<CreateModuleFunc>("CreateModule");
+
 			if (initialize)
-				pair.second->Initialize();
-			return pair.second;
+				moduleData.module->Initialize();
+
+			moduleData.module->m_Name = configFile["Name"].GetString();
+
+			return moduleData.module;
 		}
 
 		void UnLoadModule(IModule* module, bool shutdown = true)
 		{
 			for (size_t i{}; i < m_Modules.size(); i++)
 			{
-				auto& mod = m_Modules[i];
-				if (mod.second == module)
+				if (auto& moduleData = m_Modules[i]; moduleData.module == module)
 				{
 					if (shutdown)
 						module->Shutdown();
-					mod.first.GetFunction<DestroyModuleFunc>("DestroyModule")(module);
+					moduleData.dynamicLibrary.CallFunction<DestroyModuleFunc>("DestroyModule", module);
+					moduleData.dynamicLibrary.Close();
 					m_Modules.erase(m_Modules.begin() + i);
 					break;
 				}
@@ -58,32 +62,40 @@ export namespace oe
 
 		void UnLoadModules()
 		{
-			for (auto& module : m_Modules)
+			for (auto& moduleData : m_Modules | std::views::reverse)
 			{
-				module.second->Shutdown();
-				module.first.GetFunction<DestroyModuleFunc>("DestroyModule")(module.second);
+				moduleData.module->Shutdown();
+				moduleData.dynamicLibrary.CallFunction<DestroyModuleFunc>("DestroyModule", moduleData.module);
+				moduleData.dynamicLibrary.Close();
 			}
+			m_Modules.clear();
 		}
 
-		void LoadModulesFromPath(const FileSystem::Path& path)
+		void LoadModules()
 		{
-			const FileSystem::Path::Iterator iterator{path};
+			const FileSystem::Path::Iterator iterator{m_ModulesPath};
 			for (const auto& moduleIt : iterator)
 			{
 				const auto& modulePath = FileSystem::FixSeparator(moduleIt.path());
 				if (moduleIt.is_directory())
 				{
 					FileSystem::JSONFile configFile{modulePath / "module.json"};
-					const auto& module = LoadModule(modulePath / configFile["EntryPoint"].GetString());
-					module->m_Name = configFile["Name"].GetString();
+					if (HasModule(configFile["Name"].GetString()))
+						continue;
+					
+					auto& moduleData = m_Modules.emplace_back(SModuleData{});
+					moduleData.dynamicLibrary.Load((modulePath / FileSystem::Path{configFile["EntryPoint"].GetString()}).string());
+					moduleData.module = moduleData.dynamicLibrary.CallFunction<CreateModuleFunc>("CreateModule");
+					moduleData.module->Initialize();
+					moduleData.module->m_Name = configFile["Name"].GetString();
 				}
 			}
 		}
 
 		bool HasModule(const std::string& name)
 		{
-			for (const auto& item : m_Modules)
-				if (item.second->GetName() == name)
+			for (const auto& moduleData : m_Modules)
+				if (moduleData.module->GetName() == name)
 					return true;
 			return false;
 		}
@@ -113,6 +125,13 @@ export namespace oe
 			return false;
 		}
 
-		std::vector<std::pair<FileSystem::DynamicLibrary, IModule*>> m_Modules{};
+		struct SModuleData
+		{
+			FileSystem::DynamicLibrary dynamicLibrary{};
+			IModule* module;
+		};
+
+		const FileSystem::Path m_ModulesPath = "Modules/";
+		std::vector<SModuleData> m_Modules{};
 	};
 } // namespace oe

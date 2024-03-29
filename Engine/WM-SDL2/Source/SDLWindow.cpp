@@ -18,10 +18,10 @@ module;
 
 #include "glm/glm.hpp"
 
-module Oneiro.Module.WM.SDL2;
+module Oneiro.WM.SDL2;
 
 import Oneiro.Common.EngineApi;
-import Oneiro.Common.IModule;
+import Oneiro.Common.Logger;
 import Oneiro.Common.WM.IWindowManager;
 
 namespace oe
@@ -31,7 +31,7 @@ namespace oe
 		auto flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 		switch (EngineApi::GetRHI()->GetRHIType())
 		{
-			case RHI::ERHIType::GL:
+			case RHI::ERHIType::OPENGL460:
 				flags |= SDL_WINDOW_OPENGL;
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 				SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
@@ -45,7 +45,7 @@ namespace oe
 	{
 		switch (EngineApi::GetRHI()->GetRHIType())
 		{
-			case RHI::ERHIType::GL: {
+			case RHI::ERHIType::OPENGL460: {
 				SDL_GL_CreateContext(m_Window);
 				m_ProcAddress = SDL_GL_GetProcAddress;
 				break;
@@ -57,7 +57,7 @@ namespace oe
 	{
 		switch (EngineApi::GetRHI()->GetRHIType())
 		{
-			case RHI::ERHIType::GL: SDL_GL_SwapWindow(m_Window); break;
+			case RHI::ERHIType::OPENGL460: SDL_GL_SwapWindow(m_Window); break;
 		}
 	}
 
@@ -119,33 +119,33 @@ namespace oe
 		return m_Window;
 	}
 
-	bool SDLWindowManager::Initialize()
+	bool SDL2WM::Initialize()
 	{
 		if (SDL_Init(SDL_INIT_VIDEO))
 		{
-			// OE_CORE_ERROR("Failed to initialize SDL2!");
+			OE_CORE_ERROR("Failed to initialize SDL2!");
 			return false;
 		}
 		return true;
 	}
 
-	bool SDLWindowManager::Shutdown()
+	bool SDL2WM::Shutdown()
 	{
 		SDL_Quit();
 		return true;
 	}
 
-	IWindow* SDLWindowManager::CreatePlatformWindow(const SWindowProperties& windowProperties)
+	IWindow* SDL2WM::CreatePlatformWindow(const SWindowProperties& windowProperties)
 	{
 		return m_Windows.emplace_back(CreateRef<SDLWindow>(windowProperties)).get();
 	}
 
-	float SDLWindowManager::GetTime()
+	float SDL2WM::GetTime()
 	{
 		return static_cast<float>(SDL_GetTicks64()) / 1000.0f;
 	}
 
-	bool SDLWindowManager::InitializeImGui()
+	bool SDL2WM::InitializeImGui()
 	{
 		ImGui::SetCurrentContext(EngineApi::GetImGuiManager()->GetContext());
 		const auto& window = dynamic_cast<SDLWindow*>(m_Windows[0].get());
@@ -153,44 +153,20 @@ namespace oe
 		return true;
 	}
 
-	bool SDLWindowManager::BeginImGuiFrame()
+	bool SDL2WM::BeginImGuiFrame()
 	{
 		ImGui_ImplSDL2_NewFrame();
 		return true;
 	}
 
-	bool SDLWindowManager::EndImGuiFrame()
+	bool SDL2WM::EndImGuiFrame()
 	{
 		return true;
 	}
 
-	bool SDLWindowManager::ShutdownImGui()
+	bool SDL2WM::ShutdownImGui()
 	{
 		ImGui_ImplSDL2_Shutdown();
 		return true;
 	}
-
-	bool SDLWindowEngineModule::Initialize()
-	{
-		m_SDLWindowManager = CreateRef<SDLWindowManager>();
-		EngineApi::GetInstance()->windowManager = m_SDLWindowManager.get();
-		return true;
-	}
-
-	bool SDLWindowEngineModule::Shutdown()
-	{
-		EngineApi::GetInstance()->windowManager = nullptr;
-		m_SDLWindowManager.reset();
-		return true;
-	}
 } // namespace oe
-
-extern "C" __declspec(dllexport) oe::IModule* CreateModule()
-{
-	return new oe::SDLWindowEngineModule();
-}
-
-extern "C" __declspec(dllexport) void DestroyModule(oe::IModule* engineModule)
-{
-    delete engineModule;
-}

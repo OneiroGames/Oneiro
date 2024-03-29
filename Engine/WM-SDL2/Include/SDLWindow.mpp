@@ -10,21 +10,14 @@ module;
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
 
-// clang-format off
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "imgui_impl_sdl2.h"
-// clang-format on
-
 #include "glm/glm.hpp"
 
-export module Oneiro.Module.WM.SDL2;
+export module Oneiro.WM.SDL2;
 
 import Oneiro.Common.EngineApi;
-import Oneiro.Common.IModule;
 import Oneiro.Common.WM.IWindowManager;
 
-namespace oe
+export namespace oe
 {
 	class SDLWindow : public IWindow
 	{
@@ -48,7 +41,7 @@ namespace oe
 		void* m_ProcAddress{};
 	};
 
-	class SDLWindowManager : public IWindowManager
+	class OE_API SDL2WM : public IWindowManager
 	{
 	public:
 		using IWindowManager::IWindowManager;
@@ -63,17 +56,5 @@ namespace oe
 		bool BeginImGuiFrame() override;
 		bool EndImGuiFrame() override;
 		bool ShutdownImGui() override;
-	};
-
-	class SDLWindowEngineModule : public IModule
-	{
-	public:
-		using IModule::IModule;
-
-		bool Initialize() override;
-		bool Shutdown() override;
-
-	private:
-		Ref<SDLWindowManager> m_SDLWindowManager{};
 	};
 } // namespace oe

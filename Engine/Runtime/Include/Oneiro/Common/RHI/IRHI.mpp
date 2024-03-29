@@ -26,8 +26,12 @@ export namespace oe::RHI
 		UNDEFINED = 0,
 		DX11,
 		DX12,
-		GL,
-		VULKAN
+		OPENGL330,
+		OPENGL460,
+		VULKAN10,
+		VULKAN11,
+		VULKAN12,
+		VULKAN13
 	};
 
 	class OE_API IRHI

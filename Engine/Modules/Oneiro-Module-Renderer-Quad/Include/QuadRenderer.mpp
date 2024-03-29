@@ -1,0 +1,28 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Module.Renderer.Quad;
+
+import Oneiro.Common.RHI.ShaderCompiler;
+import Oneiro.Common.EngineApi;
+import Oneiro.Common.ECS.World;
+import Oneiro.Common.IModule;
+import Oneiro.Common.RHI.Base;
+
+export namespace oe
+{
+    class QuadRendererEngineModule : public IModule
+	{
+	public:
+		using IModule::IModule;
+
+		bool Initialize() override;
+		bool Shutdown() override;
+	};
+}

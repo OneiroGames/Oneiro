@@ -20,6 +20,7 @@ namespace oe::FileSystem
 	bool DynamicLibrary::Load(const std::string& path)
 	{
 		auto p = FixSeparator(Path{path});
+		m_Path = p.string();
 #ifdef _WIN32
 		m_Module = LoadLibrary((p.string() + ".dll").c_str());
 		return m_Module && m_Module != INVALID_HANDLE_VALUE;

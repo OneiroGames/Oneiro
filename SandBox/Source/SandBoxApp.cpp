@@ -21,6 +21,7 @@ bool SandBox::SandBoxApp::OnInitialize()
 
 	world = oe::EngineApi::GetAssetsManager()->CreateAssetAndLoad<oe::World>("WORLD", false, oe::FileSystem::Path("world.oeworld"))->Get<oe::World>();
 	world->CreateEntity("test");
+	
 	return true;
 }
 
@@ -29,7 +30,10 @@ bool SandBox::SandBoxApp::OnLogicUpdate(float deltaTime)
 	return true;
 }
 
-void SandBox::SandBoxApp::OnShutdown() {}
+void SandBox::SandBoxApp::OnShutdown()
+{
+	oe::EngineApi::GetWorldManager()->UnLoadWorld();
+}
 
 std::unique_ptr<oe::IApplication> CreateApplication()
 {
@@ -46,24 +50,4 @@ std::unique_ptr<oe::IApplication> CreateApplication()
 	return std::make_unique<SandBox::SandBoxApp>(applicationProperties);
 }
 
-int main(int /*argc*/, char** /*argv*/)                  
-{
-	auto application = CreateApplication();              
-	auto engine = std::make_unique<oe::Engine>();
-	try
-	{
-		engine->PreInit(application.get());
-		engine->Init();
-		engine->Run();          
-	}
-	catch (const std::exception& exception)
-	{
-		// ::oe::EngineApi::GetLogger()->GetEngineLogger()->critical("[ENGINE] " + fmt::format("ASDASD"));
-		engine->Shutdown();
-		return 1;
-	}
-	engine->Shutdown();
-	application.reset();
-	engine.reset();
-	return 0;
-}                                                            
+OE_MAIN(CreateApplication)

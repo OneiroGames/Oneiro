@@ -13,12 +13,6 @@ import Oneiro.Common.RHI.Defines;
 
 export namespace oe::RHI
 {
-	enum class EShaderStage
-	{
-		VERTEX,
-		FRAGMENT
-	};
-
 	class OE_API IShader
 	{
 	public:

@@ -9,7 +9,7 @@ module;
 
 export module Oneiro.Common.AssetsProvider;
 
-// import Oneiro.Common.Logger;
+import Oneiro.Common.Logger;
 
 export import Oneiro.Common.IAsset;
 

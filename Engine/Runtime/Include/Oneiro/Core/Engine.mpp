@@ -37,8 +37,6 @@ export namespace oe
 		static float m_DeltaTime;
 		static bool m_IsRuntime;
 
-		IModule* m_WMModule{};
-		IModule* m_RendererModule{};
 		EngineApi* m_EngineApi{};
 	};
 } // namespace oe

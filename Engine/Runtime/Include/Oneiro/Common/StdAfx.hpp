@@ -127,6 +127,7 @@ return 0;                                                \
 #include "fmt/core.h"
 #include "flecs.h"
 #include "flecs/addons/cpp/flecs.hpp"
+#include "spdlog/spdlog.h"
 
 namespace oe
 {

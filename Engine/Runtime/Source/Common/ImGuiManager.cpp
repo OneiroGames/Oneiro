@@ -8,8 +8,8 @@ module;
 #include "Oneiro/Common/StdAfx.hpp"
 
 // clang-format off
-#include "imgui.h";
-#include "imgui_internal.h";
+#include "imgui.h"
+#include "imgui_internal.h"
 //#include "ImGuizmo.h"
 // clang-format on
 

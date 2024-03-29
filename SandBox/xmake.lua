@@ -16,3 +16,9 @@ target("SandBox")
     add_files("Include/*.mpp", {public = true})
     add_files("Source/*.cpp")
     add_deps("Oneiro-Core")
+
+    after_build(function (target)
+        os.cp("$(scriptdir)/Configs/", target:targetdir())
+    end)
+
+    add_extrafiles("xmake.lua")

@@ -948,4 +948,10 @@ export namespace oe::RHI
 		bool compareEnable = false;
 		CompareOp compareOp = CompareOp::NEVER;
 	};
+
+	enum class EShaderStage
+	{
+		VERTEX,
+		FRAGMENT
+	};
 } // namespace oe::RHI
