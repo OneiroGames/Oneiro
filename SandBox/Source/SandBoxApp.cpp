@@ -1,20 +1,27 @@
-//
+﻿//
 // Copyright (c) Oneiro Games. All rights reserved.
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "SandBoxApp.hpp"
+#include "Oneiro/Common/StdAfx.hpp"
 
-#include "Oneiro/Core/EntryPoint.hpp"
+import SandBox.Application;
 
-#include "Oneiro/Common/Assets/WorldAsset.hpp"
+import Oneiro.Common.AssetsProviders.WorldAsset;
+import Oneiro.Common.EngineApi;
+import Oneiro.Core.Engine;
+import Oneiro.Common.AssetsManager;
+import Oneiro.Common.FileSystem.Path;
+import Oneiro.Common.ECS.World;
+import Oneiro.Common.Logger;
 
 bool SandBox::SandBoxApp::OnInitialize()
 {
 	oe::EngineApi::GetAssetsManager()->RegisterAssetsProvider<oe::WorldAssetsProvider>(typeid(oe::World).hash_code());
 
 	world = oe::EngineApi::GetAssetsManager()->CreateAssetAndLoad<oe::World>("WORLD", false, oe::FileSystem::Path("world.oeworld"))->Get<oe::World>();
-	world->GetOrCreateEntity("test");
+	world->CreateEntity("test");
+	
 	return true;
 }
 
@@ -23,7 +30,10 @@ bool SandBox::SandBoxApp::OnLogicUpdate(float deltaTime)
 	return true;
 }
 
-void SandBox::SandBoxApp::OnShutdown() {}
+void SandBox::SandBoxApp::OnShutdown()
+{
+	oe::EngineApi::GetWorldManager()->UnLoadWorld();
+}
 
 std::unique_ptr<oe::IApplication> CreateApplication()
 {

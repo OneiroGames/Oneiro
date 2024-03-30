@@ -3,14 +3,19 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/Loggger.hpp"
+module;
 
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 #if defined(_WIN32)
 #include "spdlog/sinks/msvc_sink.h"
 #endif
+
+module Oneiro.Common.Logger;
 
 namespace oe
 {
@@ -36,12 +41,6 @@ namespace oe
 		spdlog::register_logger(mClientLogger);
 		mClientLogger->set_level(spdlog::level::trace);
 		mClientLogger->flush_on(spdlog::level::trace);
-	}
-
-	Logger* Logger::Get()
-	{
-		static Logger logger{};
-		return &logger;
 	}
 
 	const Ref<spdlog::logger>& Logger::GetEngineLogger() const noexcept

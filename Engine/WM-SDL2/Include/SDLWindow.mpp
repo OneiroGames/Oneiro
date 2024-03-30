@@ -1,0 +1,60 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_syswm.h"
+
+#include "glm/glm.hpp"
+
+export module Oneiro.WM.SDL2;
+
+import Oneiro.Common.EngineApi;
+import Oneiro.Common.WM.IWindowManager;
+
+export namespace oe
+{
+	class SDLWindow : public IWindow
+	{
+	public:
+		using IWindow::IWindow;
+
+		void Create() override;
+		void CreateContext() override;
+		void Update() override;
+		void PollEvents() override;
+		void Close() override;
+		void Destroy() override;
+
+		SWindowHandleData GetWindowHandleData() override;
+		glm::i32vec2 GetSize() override;
+		SDL_Window* GetSDLWindow();
+
+	private:
+		SDL_Window* m_Window{};
+		SDL_Event m_Event{};
+		void* m_ProcAddress{};
+	};
+
+	class OE_API SDL2WM : public IWindowManager
+	{
+	public:
+		using IWindowManager::IWindowManager;
+
+		bool Initialize() override;
+		bool Shutdown() override;
+
+		IWindow* CreatePlatformWindow(const SWindowProperties& windowProperties) override;
+		float GetTime() override;
+
+		bool InitializeImGui() override;
+		bool BeginImGuiFrame() override;
+		bool EndImGuiFrame() override;
+		bool ShutdownImGui() override;
+	};
+} // namespace oe

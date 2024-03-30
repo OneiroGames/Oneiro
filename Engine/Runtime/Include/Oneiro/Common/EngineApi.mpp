@@ -1,0 +1,112 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "slang.h"
+#include "slang-com-ptr.h"
+
+export module Oneiro.Common.EngineApi;
+
+import Oneiro.Common.ModuleManager;
+import Oneiro.Common.AssetsManager;
+import Oneiro.Common.CVars;
+import Oneiro.Common.IApplication;
+import Oneiro.Common.ImGuiManager;
+import Oneiro.Common.JobManager;
+import Oneiro.Common.RHI.Base;
+import Oneiro.Common.WM.IWindowManager;
+import Oneiro.Common.Logger;
+
+export namespace oe
+{
+	class WorldManager;
+
+	class OE_API EngineApi
+	{
+		using CGetEngineApiInstanceFunc = EngineApi* (*)();
+	public:
+		~EngineApi();
+
+		static bool Initialize(IApplication* application);
+		static bool Shutdown();
+
+		static IApplication* GetApplication()
+		{
+			return GetInstance()->application;
+		}
+
+		static IWindowManager* GetWindowManager()
+		{
+			return GetInstance()->windowManager.get();
+		}
+
+		static RHI::IRHI* GetRHI()
+		{
+			return GetInstance()->rhi.get();
+		}
+
+		static ModuleManager* GetModuleManager()
+		{
+			return GetInstance()->moduleManager.get();
+		}
+
+		static CVars* GetCVars()
+		{
+			return GetInstance()->cVars.get();
+		}
+
+		static WorldManager* GetWorldManager()
+		{
+			return GetInstance()->worldManager.get();
+		}
+
+		static AssetsManager* GetAssetsManager()
+		{
+			return GetInstance()->assetsManager.get();
+		}
+
+		static flecs::world* GetECS()
+		{
+			return GetInstance()->ecs.get();
+		}
+
+		static ImGuiManager* GetImGuiManager()
+		{
+			return GetInstance()->imguiManager.get();
+		}
+
+		static Logger* GetLogger()
+		{
+			return GetInstance()->logger.get();
+		}
+
+		static const Slang::ComPtr<slang::IGlobalSession>& GetSlangGlobalSession()
+		{
+			return GetInstance()->slangGlobalSession;
+		}
+
+		static EngineApi* GetInstance();
+
+		IApplication* application{};
+		Ref<IWindowManager> windowManager{};
+		Ref<RHI::IRHI> rhi{};
+
+		Ref<ModuleManager> moduleManager{};
+		Ref<CVars> cVars{};
+		Ref<WorldManager> worldManager{};
+		Ref<AssetsManager> assetsManager{};
+		Ref<flecs::world> ecs{};
+		Ref<ImGuiManager> imguiManager{};
+		Ref<Logger> logger{};
+
+		Slang::ComPtr<slang::IGlobalSession> slangGlobalSession;
+
+	private:
+		static EngineApi* m_Instance;
+	};
+} // namespace oe

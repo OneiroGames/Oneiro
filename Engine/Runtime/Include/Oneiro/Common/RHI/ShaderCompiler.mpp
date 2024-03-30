@@ -1,0 +1,47 @@
+﻿//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "slang.h"
+#include "slang-com-ptr.h"
+
+export module Oneiro.Common.RHI.ShaderCompiler;
+
+import Oneiro.Common.EngineApi;
+import Oneiro.Common.FileSystem.Path;
+import <vector>;
+import <initializer_list>;
+import <unordered_map>;
+export import Oneiro.Common.RHI.Base;
+
+export namespace oe::RHI
+{
+	struct SShaderComponentDescription
+	{
+		EShaderStage shaderStage{};
+		std::string entryPoint{};
+	};
+
+	struct SShaderCompileDescription
+	{
+		std::string fileName{};
+		std::vector<SShaderComponentDescription> descriptions{};
+	};
+
+	class OE_API ShaderCompiler
+	{
+	public:
+		static bool Initialize();
+		static bool Shutdown();
+
+		static std::unordered_map<EShaderStage, std::string> Compile(const SShaderCompileDescription& description);
+
+	private:
+		static Slang::ComPtr<slang::ISession> session;
+	};
+}

@@ -1,0 +1,50 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.CVars;
+
+import Oneiro.Common.FileSystem.JSONFile;
+import Oneiro.Common.FileSystem.Path;
+
+import <unordered_map>;
+
+export namespace oe
+{
+	class OE_API CVars
+	{
+	public:
+		void Load(const std::string& name, const FileSystem::Path& path)
+		{
+			m_Configs.emplace(name, CreateRef<FileSystem::JSONFile>(path));
+		}
+
+		void Save()
+		{
+			for (const auto& item : m_Configs)
+			{
+				item.second->Save();
+			}
+		}
+
+		std::string GetString(const std::string& name, const std::string& key, const std::string& defaultValue = {})
+		{
+			const auto& it = m_Configs.find(name);
+			if (it != m_Configs.end())
+			{
+				if (it->second->Has(key))
+					return it->second->operator[](key).GetString();
+				return defaultValue;
+			}
+			return defaultValue;
+		}
+
+	private:
+		std::unordered_map<std::string, Ref<FileSystem::JSONFile>> m_Configs{};
+	};
+} // namespace oe

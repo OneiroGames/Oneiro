@@ -1,0 +1,32 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "imgui_internal.h"
+
+export module Oneiro.Common.ImGuiManager;
+
+export namespace oe
+{
+	class OE_API ImGuiManager
+	{
+	public:
+		bool Initialize();
+		bool BeginFrame();
+		bool EndFrame();
+		bool Shutdown();
+
+		ImGuiContext* GetContext()
+		{
+			return m_Context;
+		}
+
+	private:
+		ImGuiContext* m_Context;
+	};
+} // namespace oe

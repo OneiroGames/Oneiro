@@ -3,7 +3,11 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/RHI/RHI_Defines.hpp"
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+module Oneiro.Common.RHI.Defines;
 
 namespace oe::RHI
 {

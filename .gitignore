@@ -1,4 +1,7 @@
 .idea/
-.vs/
-.DS_Store/
-cmake-build-*/
+.xmake/
+build/
+bin/
+vsxmake2022/
+*.ifc
+.vscode/compile_commands.json

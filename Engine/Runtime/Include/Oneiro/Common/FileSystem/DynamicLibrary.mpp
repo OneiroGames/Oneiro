@@ -1,0 +1,54 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.FileSystem.DynamicLibrary;
+
+#ifdef _WIN32
+import <Windows.h>;
+#endif
+
+export namespace oe::FileSystem
+{
+	class OE_API DynamicLibrary
+	{
+	public:
+		bool Load(const std::string& path);
+
+		template <class T>
+		T GetFunction(const std::string& name);
+
+		template <class T, class... Args>
+		auto CallFunction(const std::string& name, Args&&... args)
+		{
+			return GetFunction<T>(name)(args...);
+		}
+
+		void Close();
+
+		const std::string& GetPath() const
+		{
+			return m_Path;
+		}
+
+	private:
+#ifdef _WIN32
+		HMODULE m_Module{};
+#endif
+		std::string m_Path{};
+	};
+
+	template <class T>
+	T DynamicLibrary::GetFunction(const std::string& name)
+	{
+#ifdef _WIN32
+		auto func = GetProcAddress(m_Module, name.c_str());
+		return reinterpret_cast<T>(func);
+#endif
+	}
+} // namespace oe::FileSystem

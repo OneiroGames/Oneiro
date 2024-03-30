@@ -3,20 +3,34 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/FileSystem/DynamicLibrary.hpp"
+module;
 
-#include "Oneiro/Common/Common.hpp"
+#include "Oneiro/Common/StdAfx.hpp"
+
+module Oneiro.Common.FileSystem.DynamicLibrary;
+
+#ifdef _WIN32
+import <Windows.h>;
+#endif
+
+import Oneiro.Common.FileSystem.Base;
 
 namespace oe::FileSystem
 {
 	bool DynamicLibrary::Load(const std::string& path)
 	{
-		m_Module = LoadLibrary((path).c_str());
+		auto p = FixSeparator(Path{path});
+		m_Path = p.string();
+#ifdef _WIN32
+		m_Module = LoadLibrary((p.string() + ".dll").c_str());
 		return m_Module && m_Module != INVALID_HANDLE_VALUE;
+#endif
 	}
 
 	void DynamicLibrary::Close()
 	{
+#ifdef _WIN32
 		FreeLibrary(m_Module);
+#endif
 	}
 } // namespace oe::FileSystem

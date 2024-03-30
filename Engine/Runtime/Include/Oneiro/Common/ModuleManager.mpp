@@ -1,0 +1,137 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include <ranges>
+
+export module Oneiro.Common.ModuleManager;
+
+import Oneiro.Common.FileSystem.DynamicLibrary;
+import Oneiro.Common.IModule;
+import Oneiro.Common.FileSystem.Path;
+import Oneiro.Common.FileSystem.JSONFile;
+
+import <vector>;
+
+export namespace oe
+{
+	class OE_API ModuleManager
+	{
+	public:
+		ModuleManager() = default;
+
+		IModule* LoadModule(const FileSystem::Path& path, bool initialize = true)
+		{
+			FileSystem::JSONFile configFile{m_ModulesPath / path / "module.json"};
+			if (HasModule(configFile["Name"].GetString()))
+				return {};
+			
+			auto& moduleData = m_Modules.emplace_back(SModuleData{});
+
+			moduleData.dynamicLibrary.Load((m_ModulesPath / path / FileSystem::Path{configFile["EntryPoint"].GetString()}).string());
+			moduleData.module = moduleData.dynamicLibrary.CallFunction<CreateModuleFunc>("CreateModule");
+
+			if (initialize)
+				moduleData.module->Initialize();
+
+			moduleData.module->m_Name = configFile["Name"].GetString();
+
+			return moduleData.module;
+		}
+
+		void UnLoadModule(IModule* module, bool shutdown = true)
+		{
+			for (size_t i{}; i < m_Modules.size(); i++)
+			{
+				if (auto& moduleData = m_Modules[i]; moduleData.module == module)
+				{
+					if (shutdown)
+						module->Shutdown();
+					moduleData.dynamicLibrary.CallFunction<DestroyModuleFunc>("DestroyModule", module);
+					moduleData.dynamicLibrary.Close();
+					m_Modules.erase(m_Modules.begin() + i);
+					break;
+				}
+			}
+		}
+
+		void UnLoadModules()
+		{
+			for (auto& moduleData : m_Modules | std::views::reverse)
+			{
+				moduleData.module->Shutdown();
+				moduleData.dynamicLibrary.CallFunction<DestroyModuleFunc>("DestroyModule", moduleData.module);
+				moduleData.dynamicLibrary.Close();
+			}
+			m_Modules.clear();
+		}
+
+		void LoadModules()
+		{
+			const FileSystem::Path::Iterator iterator{m_ModulesPath};
+			for (const auto& moduleIt : iterator)
+			{
+				const auto& modulePath = FileSystem::FixSeparator(moduleIt.path());
+				if (moduleIt.is_directory())
+				{
+					FileSystem::JSONFile configFile{modulePath / "module.json"};
+					if (HasModule(configFile["Name"].GetString()))
+						continue;
+					
+					auto& moduleData = m_Modules.emplace_back(SModuleData{});
+					moduleData.dynamicLibrary.Load((modulePath / FileSystem::Path{configFile["EntryPoint"].GetString()}).string());
+					moduleData.module = moduleData.dynamicLibrary.CallFunction<CreateModuleFunc>("CreateModule");
+					moduleData.module->Initialize();
+					moduleData.module->m_Name = configFile["Name"].GetString();
+				}
+			}
+		}
+
+		bool HasModule(const std::string& name)
+		{
+			for (const auto& moduleData : m_Modules)
+				if (moduleData.module->GetName() == name)
+					return true;
+			return false;
+		}
+
+	private:
+		bool FindAndLoadDepModule(const FileSystem::Path::Iterator& iterator, const std::string& name)
+		{
+			// for (const auto& modulePath : iterator)
+			// {
+			// 	if (modulePath.is_directory())
+			// 	{
+			// 		FileSystem::JSONFile configFile{modulePath / FileSystem::Path("module.json")};
+			// 		if (configFile["Name"].GetString() == name)
+			// 		{
+			// 			const auto& deps = configFile["Dependencies"].GetArray();
+			// 			for (const auto& dep : deps)
+			// 			{
+			// 				if (!HasModule(dep.GetString()) && !FindAndLoadDepModule(iterator, dep.GetString()))
+			// 					return false;
+			// 			}
+			// 			const auto& module = LoadModule(modulePath / FileSystem::Path(configFile["EntryPoint"].GetString()));
+			// 			module->m_Name = configFile["Name"].GetString();
+			// 			return true;
+			// 		}
+			// 	}
+			// }
+			return false;
+		}
+
+		struct SModuleData
+		{
+			FileSystem::DynamicLibrary dynamicLibrary{};
+			IModule* module;
+		};
+
+		const FileSystem::Path m_ModulesPath = "Modules/";
+		std::vector<SModuleData> m_Modules{};
+	};
+} // namespace oe

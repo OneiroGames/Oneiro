@@ -1,7 +1,0 @@
-Project:
-  Name: OEditor
-  AssetsPath: Assets/
-  ShadersPath: Assets/Shaders/
-  WorldsPath: "null"
-  ImGuiFontPath: Fonts/arial.ttf
-  StartWorldPath: "null"

@@ -1,0 +1,42 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Core.Engine;
+
+import Oneiro.Common.EngineApi;
+import Oneiro.Common.IModule;
+import Oneiro.Common.JobManager;
+import Oneiro.Common.WM.IWindow;
+import Oneiro.Common.IApplication;
+
+export namespace oe
+{
+	class OE_API Engine
+	{
+	public:
+		void PreInit(IApplication* application);
+		void Init();
+		void Run();
+		void Shutdown();
+
+		static float GetDeltaTime() noexcept;
+		static bool IsRuntime() noexcept;
+
+		EngineApi* GetApi()
+		{
+			return m_EngineApi;
+		}
+
+	private:
+		static float m_DeltaTime;
+		static bool m_IsRuntime;
+
+		EngineApi* m_EngineApi{};
+	};
+} // namespace oe

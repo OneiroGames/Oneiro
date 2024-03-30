@@ -3,9 +3,13 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/FileSystem/Path.hpp"
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
 
 #include "physfs.h"
+
+module Oneiro.Common.FileSystem.Path;
 
 namespace oe::FileSystem
 {

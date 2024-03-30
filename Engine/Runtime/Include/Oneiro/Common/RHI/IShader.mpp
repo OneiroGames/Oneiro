@@ -1,0 +1,21 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.RHI.IShader;
+
+import Oneiro.Common.RHI.Defines;
+
+export namespace oe::RHI
+{
+	class OE_API IShader
+	{
+	public:
+		virtual bool Load(EShaderStage stage, const std::string& source) = 0;
+	};
+} // namespace oe::RHI

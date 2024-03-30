@@ -3,11 +3,16 @@
 // Licensed under the GNU General Public License, Version 3.0.
 //
 
-#include "Oneiro/Common/Math/Math.hpp"
+module;
 
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/matrix_decompose.inl"
 
-#include <array>
+module Oneiro.Common.Math.Base;
+
+import <array>;
 
 namespace oe::Math
 {

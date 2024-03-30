@@ -1,0 +1,41 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+export module Oneiro.Common.RHI.IBuffer;
+
+import Oneiro.Common.RHI.Defines;
+
+export namespace oe::RHI
+{
+	class OE_API IBuffer
+	{
+	public:
+		IBuffer() = default;
+		IBuffer(IBuffer&& old) noexcept = default;
+		IBuffer& operator=(IBuffer&& old) = default;
+		IBuffer(const IBuffer&) = delete;
+		IBuffer& operator=(const IBuffer&) = delete;
+		~IBuffer() = default;
+
+		virtual void Create(const void* data, size_t size, BufferStorageFlags storageFlags = BufferStorageFlag::NONE, std::string_view name = "") = 0;
+		virtual void UpdateData(const void* data, size_t size, size_t destOffsetBytes = 0) = 0;
+		virtual void FillData(const BufferFillInfo& clear = {}) = 0;
+		virtual void Invalidate() = 0;
+
+		[[nodiscard]] void* GetMappedPointer() noexcept;
+		[[nodiscard]] const void* GetMappedPointer() const noexcept;
+		[[nodiscard]] size_t Size() const noexcept;
+		[[nodiscard]] bool IsMapped() const noexcept;
+
+	protected:
+		size_t m_Size{};
+		uint32_t m_BufferStorageFlags{};
+		void* m_MappedMemory{};
+	};
+} // namespace oe::RHI

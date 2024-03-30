@@ -1,0 +1,49 @@
+//
+// Copyright (c) Oneiro Games. All rights reserved.
+// Licensed under the GNU General Public License, Version 3.0.
+//
+
+module;
+
+#include "Oneiro/Common/StdAfx.hpp"
+
+#include "glm/glm.hpp"
+
+export module Oneiro.Common.IApplication;
+
+import Oneiro.Common.FileSystem.Path;
+import Oneiro.Common.WM.IWindow;
+
+export namespace oe
+{
+	struct OE_API ApplicationProperties
+	{
+		SWindowProperties windowProperties{};
+		struct Engine
+		{
+			bool controlWorldState = true;
+		} engine;
+		FileSystem::Path projectFilePath{};
+	};
+
+	class OE_API IApplication
+	{
+	public:
+		IApplication() = delete;
+
+		IApplication(ApplicationProperties applicationProperties);
+
+		virtual ~IApplication();
+
+		virtual bool OnPreInitialize();
+		virtual bool OnInitialize();
+		virtual bool OnLogicUpdate(float deltaTime);
+		virtual bool OnRender(float deltaTime);
+		virtual void OnShutdown();
+
+		[[nodiscard]] const ApplicationProperties& GetProperties() const noexcept;
+
+	private:
+		ApplicationProperties mProps{};
+	};
+} // namespace oe
