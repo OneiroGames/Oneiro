@@ -30,7 +30,7 @@ namespace oe
 
 	EngineApi::~EngineApi()
 	{
-		slangGlobalSession->Release();
+		slangGlobalSession.~ComPtr();
 		imguiManager.reset();
 		rhi.reset();
 		windowManager.reset();

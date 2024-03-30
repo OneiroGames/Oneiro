@@ -36,7 +36,6 @@ namespace oe::RHI
 
 	bool ShaderCompiler::Shutdown()
 	{
-		session->Release();
 		session.~ComPtr();
 		return true;
 	}

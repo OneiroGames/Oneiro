@@ -4,5 +4,8 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"C_Cpp.default.compileCommands": ".vscode/compile_commands.json",
+		"C_Cpp.default.cppStandard": "c++23"
+	}
 }
